@@ -632,13 +632,9 @@ public class MainPanel extends JPanel{
 	 */
 	private BufferedImage mouseCursorImage = new BufferedImage(55,43,BufferedImage.TYPE_INT_ARGB);
 	/**
-	 * 表示鼠标图片应该被画到的位置
+	 * 表示鼠标图片应该被放置的坐标
 	 */
-	private int positionX;
-	/**
-	 * 表示鼠标图片应该被滑倒的位置
-	 */
-	private int positionY;
+	private int positionX,positionY;
 	
 	/**
 	 * 绘制默认样式的鼠标
