@@ -326,6 +326,7 @@ public class MainPanel extends JPanel{
 			}
 		};
 		timer.schedule(refreshTask, 1L, paintPeriod);
+		
 	}
 	
 	
