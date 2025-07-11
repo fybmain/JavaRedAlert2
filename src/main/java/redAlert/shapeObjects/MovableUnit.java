@@ -29,9 +29,16 @@ public abstract class MovableUnit extends ShapeUnit implements Bloodable{
 	 * 选中时说的话
 	 */
 	public String [] selectSounds = null;
+	/**
+	 * 停止令
+	 * 当此变量为true时,单位必须在移动到nextTarget后停止移动
+	 */
+	public volatile boolean stopFlag = false;
+	
+	
 	
 	/**
-	 * 移动时说的话
+	 * 随机播放移动时语音
 	 */
 	public void movePlay() {
 		if(moveSounds!=null && moveSounds.length>0) {
@@ -39,7 +46,7 @@ public abstract class MovableUnit extends ShapeUnit implements Bloodable{
 		}
 	}
 	/**
-	 * 选中时说的话
+	 * 随机播放选中时语音
 	 */
 	public void selectPlay() {
 		if(selectSounds!=null && selectSounds.length>0) {
@@ -49,25 +56,28 @@ public abstract class MovableUnit extends ShapeUnit implements Bloodable{
 	
 	
 	/**
-	 * 被用户鼠标选中操作
+	 * 被用户鼠标选中
+	 * 
+	 * 显示血条
 	 */
 	public void beSelected() {
 		bloodBar.setVisible(true);
 	}
 	/**
 	 * 失去选中
+	 * 
+	 * 隐藏血条
 	 */
 	public void unSelected() {
 		bloodBar.setVisible(false);
 	}
 	
 	
-	public BloodBar getBloodBar() {
-		return bloodBar;
-	}
-	public void setBloodBar(VehicleBloodBar bloodBar) {
-		this.bloodBar = bloodBar;
-	}
+	
+	
+	
+	
+	
 	/**
 	 * 移动至目标中心点
 	 * 
@@ -80,6 +90,21 @@ public abstract class MovableUnit extends ShapeUnit implements Bloodable{
 	 */
 	public void moveToTarget(LittleCenterPoint target) {
 		
+	}
+	
+	
+	
+	public BloodBar getBloodBar() {
+		return bloodBar;
+	}
+	public void setBloodBar(VehicleBloodBar bloodBar) {
+		this.bloodBar = bloodBar;
+	}
+	public boolean isStopFlag() {
+		return stopFlag;
+	}
+	public void setStopFlag(boolean stopFlag) {
+		this.stopFlag = stopFlag;
 	}
 	
 }

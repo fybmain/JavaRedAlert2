@@ -56,6 +56,9 @@ public class AfPill extends Building{
 			super.constShpFilePrefix = team + snoMark + basicName + "mk";
 			super.aniShpPrefixLs.add("gapill");
 		}
+		//定义显示名称
+		super.unitName = "机枪碉堡";
+		
 	}
 	
 	/**

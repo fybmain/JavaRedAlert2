@@ -71,7 +71,7 @@ public class AfCnst extends Building{
 			super.aniShpPrefixLs.add("gacnst");
 			super.aniShpPrefixLs.add("gacnst_a");
 		}
-		//定义唯一编号
+		//定义显示名称
 		super.unitName = "盟军基地车";
 		//夹箱子动画
 		if(sceneType==SceneType.TEM || sceneType==SceneType.URBAN) {

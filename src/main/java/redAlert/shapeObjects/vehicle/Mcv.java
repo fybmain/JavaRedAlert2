@@ -12,7 +12,6 @@ import redAlert.resourceCenter.ShapeUnitResourceCenter;
 import redAlert.shapeObjects.Expandable;
 import redAlert.shapeObjects.Vehicle;
 import redAlert.utilBean.CenterPoint;
-import redAlert.utilBean.XunLuBean;
 import redAlert.utils.PointUtil;
 
 /**
@@ -34,7 +33,9 @@ public class Mcv extends Vehicle implements Expandable{
 		//定义名称
 		super.unitName = "盟军基地车";
 		//降低基地车的移动速度
-		this.frameSpeed = 4;
+		super.frameSpeed = 4;
+		//基地车没有攻击能力
+		super.attackable = false;
 	}
 	
 	/**
@@ -45,89 +46,12 @@ public class Mcv extends Vehicle implements Expandable{
 	public void calculateNextFrame() {
 		
 		if(status==MCV_STATUS_NORMAL) {
-			//先给出几种否决条件
-			if(nextTarget==null) {//无下一个位置  不移动
-				return;
-			}
 			
-			if(endTarget==null) {//无终点 不移动
-				return;
-			}
+			super.calculateNextFrame();
 			
-			if(movePath==null || movePath.size()<1) {
-				return;
-			}
-			
-			//判定是否已经到达下一个地点
-			if(isArrivedNextTarget()) {
-				if(isArrivedEndTarget()) {//判断是否已经到达终点
-					movePath = null;
-					nextTarget=null;
-					endTarget=null;
-				}else {
-					
-					//是否有临时停止标志  有的话  需要暂停计算  等待寻路完成  帧停顿
-					if(stopFlag) {
-						return;
-					}
-					
-					
-					//若发生重定位,说明movePath变量发生了变化,获取nextTarget的方式要改变
-					if(resetTarget) {
-						nextTarget = movePath.get(0);
-						resetTarget = false;
-						calAndSetTargetTurn(this, nextTarget);
-						
-						moveOneTime();
-						
-						
-					}else {//根据当前位置  确认下一个位置
-						int curIndex = movePath.indexOf(nextTarget);
-						nextTarget = movePath.get(curIndex+1);
-						
-						//确认这个位置是否可达
-						if(nextTarget.isVehicleCanOn()) {
-							calAndSetTargetTurn(this, nextTarget);
-							moveOneTime();
-						}else {
-							//实现重新规划线路
-							xunluLock.lock();
-							try {
-								XunLuBean xlb = new XunLuBean();
-								List<CenterPoint> path = xlb.xunlu(curCenterPoint, endTarget);
-								if(path!=null) {
-									this.movePath = path;
-									nextTarget = movePath.get(0);
-									calAndSetTargetTurn(this, nextTarget);
-									moveOneTime();
-								}else {
-									nextTarget = null;
-									endTarget = null;
-									movePath = null;
-								}
-							}catch (Exception e) {
-								System.out.println("程序自动寻路异常");
-								e.printStackTrace();
-							}finally {
-								xunluLock.unlock();
-							}
-						}
-						
-					}
-				}
-			}else {
-				moveOneTime();
-			}
 			super.curFrame = bodyFrames.get(curTurn);
 			this.positionMinX = positionX+curFrame.getMinX();
 			this.positionMinY = positionY+curFrame.getMinY();
-			
-		
-		
-		
-		
-		
-		
 		
 		}else {
 			
