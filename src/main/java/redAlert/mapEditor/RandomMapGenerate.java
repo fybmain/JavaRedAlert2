@@ -10,6 +10,8 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 
+import redAlert.GlobalConfig;
+
 /**
  * 随机地图生成的方法放在这里
  */
@@ -61,7 +63,7 @@ public class RandomMapGenerate {
 		}
 		
 		try {
-			FileUtils.writeStringToFile(new File("E:/gmap.text"), text.toString(), "UTF-8");
+			FileUtils.writeStringToFile(new File(GlobalConfig.mapFilePath), text.toString(), "UTF-8");
 		}catch (Exception e) {
 			// TODO: handle exception
 		}

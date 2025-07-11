@@ -21,6 +21,12 @@ public class GlobalConfig {
 	 * 国家
 	 */
 	public static Country country = Country.USA;
+	/**
+	 * 地图文件路径
+	 */
+	public static String mapFilePath = "E:/gmap.text";
+	
+	
 	
 	
 }

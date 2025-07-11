@@ -341,105 +341,102 @@ public class MainPanel extends JPanel{
 	private void initGuidelinesCanvas() {
 		CanvasPainter.drawGuidelines(guidelinesCanvas);//辅助线网格
 		
-		
-		//加载tmp文件
+		//读取地形文件
 		try {
-			terrainImageList.add(TmpFileReader.test("clat01.sno"));
-			terrainImageList.add(TmpFileReader.test("clat02.sno"));
-			terrainImageList.add(TmpFileReader.test("clat03.sno"));
-			terrainImageList.add(TmpFileReader.test("clat04.sno"));
-			terrainImageList.add(TmpFileReader.test("clat05.sno"));
-			terrainImageList.add(TmpFileReader.test("clat06.sno"));
-			terrainImageList.add(TmpFileReader.test("clat07.sno"));
-			terrainImageList.add(TmpFileReader.test("clat08.sno"));
-			terrainImageList.add(TmpFileReader.test("clat09.sno"));
-			terrainImageList.add(TmpFileReader.test("clat10.sno"));
-			terrainImageList.add(TmpFileReader.test("clat11.sno"));
-			terrainImageList.add(TmpFileReader.test("clat12.sno"));
-			terrainImageList.add(TmpFileReader.test("clat13.sno"));
-			terrainImageList.add(TmpFileReader.test("clat14.sno"));
-			terrainImageList.add(TmpFileReader.test("clat15.sno"));
-			terrainImageList.add(TmpFileReader.test("clat16.sno"));
-			
-			terrainImageList.add(TmpFileReader.test("clat01a.sno"));
-			terrainImageList.add(TmpFileReader.test("clat02a.sno"));
-			terrainImageList.add(TmpFileReader.test("clat03a.sno"));
-			terrainImageList.add(TmpFileReader.test("clat04a.sno"));
-			terrainImageList.add(TmpFileReader.test("clat05a.sno"));
-			terrainImageList.add(TmpFileReader.test("clat06a.sno"));
-			terrainImageList.add(TmpFileReader.test("clat07a.sno"));
-			terrainImageList.add(TmpFileReader.test("clat08a.sno"));
-			terrainImageList.add(TmpFileReader.test("clat09a.sno"));
-			terrainImageList.add(TmpFileReader.test("clat10a.sno"));
-			terrainImageList.add(TmpFileReader.test("clat11a.sno"));
-			terrainImageList.add(TmpFileReader.test("clat12a.sno"));
-			terrainImageList.add(TmpFileReader.test("clat13a.sno"));
-			terrainImageList.add(TmpFileReader.test("clat14a.sno"));
-			terrainImageList.add(TmpFileReader.test("clat15a.sno"));
-			terrainImageList.add(TmpFileReader.test("clat16a.sno"));
-			
-			terrainNameList.add(("clat01.sno"));
-			terrainNameList.add(("clat02.sno"));
-			terrainNameList.add(("clat03.sno"));
-			terrainNameList.add(("clat04.sno"));
-			terrainNameList.add(("clat05.sno"));
-			terrainNameList.add(("clat06.sno"));
-			terrainNameList.add(("clat07.sno"));
-			terrainNameList.add(("clat08.sno"));
-			terrainNameList.add(("clat09.sno"));
-			terrainNameList.add(("clat10.sno"));
-			terrainNameList.add(("clat11.sno"));
-			terrainNameList.add(("clat12.sno"));
-			terrainNameList.add(("clat13.sno"));
-			terrainNameList.add(("clat14.sno"));
-			terrainNameList.add(("clat15.sno"));
-			terrainNameList.add(("clat16.sno"));
-			
-			terrainNameList.add(("clat01a.sno"));
-			terrainNameList.add(("clat02a.sno"));
-			terrainNameList.add(("clat03a.sno"));
-			terrainNameList.add(("clat04a.sno"));
-			terrainNameList.add(("clat05a.sno"));
-			terrainNameList.add(("clat06a.sno"));
-			terrainNameList.add(("clat07a.sno"));
-			terrainNameList.add(("clat08a.sno"));
-			terrainNameList.add(("clat09a.sno"));
-			terrainNameList.add(("clat10a.sno"));
-			terrainNameList.add(("clat11a.sno"));
-			terrainNameList.add(("clat12a.sno"));
-			terrainNameList.add(("clat13a.sno"));
-			terrainNameList.add(("clat14a.sno"));
-			terrainNameList.add(("clat15a.sno"));
-			terrainNameList.add(("clat16a.sno"));
-			
-		}catch (Exception e) {
-			
-		}
-		
-//		//读取地形文件
-		try {
-			String mapText = FileUtils.readFileToString(new File("E:/gmap.text"), "UTF-8");
-			String [] strs = StringUtils.split(mapText,"$");
-			
-			
-			Graphics2D g2d = guidelinesCanvas.createGraphics();
-			
-			for(int i=0;i<strs.length;i++) {
-				String info = strs[i];
-				String [] infos = StringUtils.split(info,",");
-				int x = Integer.valueOf(infos[0]);
-				int y = Integer.valueOf(infos[1]);
-				String name = infos[2];
+			File mapFile = new File(GlobalConfig.mapFilePath);
+			if(mapFile.exists()) {
+				//加载tmp文件
+				terrainImageList.add(TmpFileReader.test("clat01.sno"));
+				terrainImageList.add(TmpFileReader.test("clat02.sno"));
+				terrainImageList.add(TmpFileReader.test("clat03.sno"));
+				terrainImageList.add(TmpFileReader.test("clat04.sno"));
+				terrainImageList.add(TmpFileReader.test("clat05.sno"));
+				terrainImageList.add(TmpFileReader.test("clat06.sno"));
+				terrainImageList.add(TmpFileReader.test("clat07.sno"));
+				terrainImageList.add(TmpFileReader.test("clat08.sno"));
+				terrainImageList.add(TmpFileReader.test("clat09.sno"));
+				terrainImageList.add(TmpFileReader.test("clat10.sno"));
+				terrainImageList.add(TmpFileReader.test("clat11.sno"));
+				terrainImageList.add(TmpFileReader.test("clat12.sno"));
+				terrainImageList.add(TmpFileReader.test("clat13.sno"));
+				terrainImageList.add(TmpFileReader.test("clat14.sno"));
+				terrainImageList.add(TmpFileReader.test("clat15.sno"));
+				terrainImageList.add(TmpFileReader.test("clat16.sno"));
 				
-				int index = terrainNameList.indexOf(name);
-				CenterPoint cp = PointUtil.fetchCenterPoint(x, y);
-				cp.setTileIndex(index);
-				BufferedImage image = terrainImageList.get(index);
-				g2d.drawImage(image, cp.getX()-30, cp.getY()-15, null);
+				terrainImageList.add(TmpFileReader.test("clat01a.sno"));
+				terrainImageList.add(TmpFileReader.test("clat02a.sno"));
+				terrainImageList.add(TmpFileReader.test("clat03a.sno"));
+				terrainImageList.add(TmpFileReader.test("clat04a.sno"));
+				terrainImageList.add(TmpFileReader.test("clat05a.sno"));
+				terrainImageList.add(TmpFileReader.test("clat06a.sno"));
+				terrainImageList.add(TmpFileReader.test("clat07a.sno"));
+				terrainImageList.add(TmpFileReader.test("clat08a.sno"));
+				terrainImageList.add(TmpFileReader.test("clat09a.sno"));
+				terrainImageList.add(TmpFileReader.test("clat10a.sno"));
+				terrainImageList.add(TmpFileReader.test("clat11a.sno"));
+				terrainImageList.add(TmpFileReader.test("clat12a.sno"));
+				terrainImageList.add(TmpFileReader.test("clat13a.sno"));
+				terrainImageList.add(TmpFileReader.test("clat14a.sno"));
+				terrainImageList.add(TmpFileReader.test("clat15a.sno"));
+				terrainImageList.add(TmpFileReader.test("clat16a.sno"));
 				
+				terrainNameList.add(("clat01.sno"));
+				terrainNameList.add(("clat02.sno"));
+				terrainNameList.add(("clat03.sno"));
+				terrainNameList.add(("clat04.sno"));
+				terrainNameList.add(("clat05.sno"));
+				terrainNameList.add(("clat06.sno"));
+				terrainNameList.add(("clat07.sno"));
+				terrainNameList.add(("clat08.sno"));
+				terrainNameList.add(("clat09.sno"));
+				terrainNameList.add(("clat10.sno"));
+				terrainNameList.add(("clat11.sno"));
+				terrainNameList.add(("clat12.sno"));
+				terrainNameList.add(("clat13.sno"));
+				terrainNameList.add(("clat14.sno"));
+				terrainNameList.add(("clat15.sno"));
+				terrainNameList.add(("clat16.sno"));
+				
+				terrainNameList.add(("clat01a.sno"));
+				terrainNameList.add(("clat02a.sno"));
+				terrainNameList.add(("clat03a.sno"));
+				terrainNameList.add(("clat04a.sno"));
+				terrainNameList.add(("clat05a.sno"));
+				terrainNameList.add(("clat06a.sno"));
+				terrainNameList.add(("clat07a.sno"));
+				terrainNameList.add(("clat08a.sno"));
+				terrainNameList.add(("clat09a.sno"));
+				terrainNameList.add(("clat10a.sno"));
+				terrainNameList.add(("clat11a.sno"));
+				terrainNameList.add(("clat12a.sno"));
+				terrainNameList.add(("clat13a.sno"));
+				terrainNameList.add(("clat14a.sno"));
+				terrainNameList.add(("clat15a.sno"));
+				terrainNameList.add(("clat16a.sno"));
+				
+				
+				//读取地图文件
+				String mapText = FileUtils.readFileToString(new File(GlobalConfig.mapFilePath), "UTF-8");
+				String [] strs = StringUtils.split(mapText,"$");
+				
+				Graphics2D g2d = guidelinesCanvas.createGraphics();
+				
+				for(int i=0;i<strs.length;i++) {
+					String info = strs[i];
+					String [] infos = StringUtils.split(info,",");
+					int x = Integer.valueOf(infos[0]);
+					int y = Integer.valueOf(infos[1]);
+					String name = infos[2];
+					
+					int index = terrainNameList.indexOf(name);
+					CenterPoint cp = PointUtil.fetchCenterPoint(x, y);
+					cp.setTileIndex(index);
+					BufferedImage image = terrainImageList.get(index);
+					g2d.drawImage(image, cp.getX()-30, cp.getY()-15, null);
+					
+				}
+				g2d.dispose();
 			}
-			g2d.dispose();
-			
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -452,36 +449,37 @@ public class MainPanel extends JPanel{
 	 */
 	private void drawTerrain(int viewportOffX,int viewportOffY) {
 		
-		Graphics2D g2d = guidelinesCanvas.createGraphics();
-		//一类中心点
-		for(int m=0;m<50;m++) {
-			int y = 15+30*m;
-			for(int n=0;n<50;n++) {
-				int x = 30+60*n;
-				CenterPoint cp = PointUtil.fetchCenterPoint(x, y);
-				int cpx = cp.getX();
-				int cpy = cp.getY();
-				if(  cpx>= viewportOffX-100 && cpx<=viewportOffX+viewportWidth+100 && cpy>=viewportOffY-100 && cpy< viewportOffY+viewportHeight+100) {
-					g2d.drawImage( terrainImageList.get(cp.getTileIndex()), cp.getX()-30-viewportOffX, cp.getY()-15-viewportOffY, null);
+		if(!terrainImageList.isEmpty()) {
+			Graphics2D g2d = guidelinesCanvas.createGraphics();
+			//一类中心点
+			for(int m=0;m<50;m++) {
+				int y = 15+30*m;
+				for(int n=0;n<50;n++) {
+					int x = 30+60*n;
+					CenterPoint cp = PointUtil.fetchCenterPoint(x, y);
+					int cpx = cp.getX();
+					int cpy = cp.getY();
+					if(  cpx>= viewportOffX-100 && cpx<=viewportOffX+viewportWidth+100 && cpy>=viewportOffY-100 && cpy< viewportOffY+viewportHeight+100) {
+						g2d.drawImage( terrainImageList.get(cp.getTileIndex()), cp.getX()-30-viewportOffX, cp.getY()-15-viewportOffY, null);
+					}
 				}
 			}
-		}
-		
-		//二类中心点
-		for(int m=0;m<50;m++) {
-			int y = 30*m;
-			for(int n=0;n<50;n++) {
-				int x = 60*n;
-				CenterPoint cp = PointUtil.fetchCenterPoint(x, y);
-				int cpx = cp.getX();
-				int cpy = cp.getY();
-				if(  cpx>= viewportOffX-100 && cpx<=viewportOffX+viewportWidth+100 && cpy>=viewportOffY-100 && cpy< viewportOffY+viewportHeight+100) {
-					g2d.drawImage( terrainImageList.get(cp.getTileIndex()), cp.getX()-30-viewportOffX, cp.getY()-15-viewportOffY, null);
+			
+			//二类中心点
+			for(int m=0;m<50;m++) {
+				int y = 30*m;
+				for(int n=0;n<50;n++) {
+					int x = 60*n;
+					CenterPoint cp = PointUtil.fetchCenterPoint(x, y);
+					int cpx = cp.getX();
+					int cpy = cp.getY();
+					if(  cpx>= viewportOffX-100 && cpx<=viewportOffX+viewportWidth+100 && cpy>=viewportOffY-100 && cpy< viewportOffY+viewportHeight+100) {
+						g2d.drawImage( terrainImageList.get(cp.getTileIndex()), cp.getX()-30-viewportOffX, cp.getY()-15-viewportOffY, null);
+					}
 				}
 			}
+			g2d.dispose();
 		}
-		
-		g2d.dispose();
 	}
 	
 	
