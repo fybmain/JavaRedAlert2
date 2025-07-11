@@ -113,7 +113,7 @@ public class AfSam extends Building{
 	 */
 	public void initShpSource(SceneType sceneType) {
 		super.constConfig = ConstEnum.AfSam;
-		super.height = 20;
+		super.height = 60;
 		setCenterOffX(50);
 		setCenterOffY(50);
 		if(sceneType==SceneType.TEM) {
