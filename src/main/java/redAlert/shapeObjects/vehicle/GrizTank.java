@@ -29,9 +29,9 @@ public class GrizTank extends Vehicle {
 		super.initVehicleParam(positionX,positionY, unitColor, "gtnk");
 		//定义名称
 		super.unitName = "灰熊坦克";
-		//移动时说的话
+		//移动时单位语音
 		super.moveSounds = new String[] {"vgramoa","vgramob","vgramoc","vgramod","vgramoe","vgramof"};
-		//选中时说的话
+		//选中时单位语音
 		super.selectSounds = new String []{"vgrasea","vgraseb","vgrasec","vgrased","vgrasee"};
 		
 		

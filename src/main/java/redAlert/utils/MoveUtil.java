@@ -116,6 +116,7 @@ public class MoveUtil {
 			}
 		}
 		
+		//画多条移动线
 		createManyMoveLine(movePlanLs);
 		
 		/*
@@ -189,13 +190,33 @@ public class MoveUtil {
 	}
 	
 	/**
-	 * 单兵移动
+	 * 单个单位移动
 	 */
 	public static void move(MovableUnit moveUnit,CenterPoint targetCp) {
 		createOneMoveLine(targetCp,moveUnit);
+		
+		moveUnit.stopFlag = true;
+		//确认已停止
+		while(true) {
+			if(moveUnit instanceof Vehicle) {
+				Vehicle vehicle = (Vehicle)moveUnit;
+				if(vehicle.nextTarget==null) {
+					break;
+				}
+			}else {
+				//步兵的以后再写
+				break;
+			}
+		}
+		//重置停止符号
+		moveUnit.stopFlag = false;
+		//发动机引擎启动  //发出移动命令
 		if(moveUnit instanceof Vehicle) {
+			Vehicle vehicle = (Vehicle)moveUnit;
+			vehicle.setEngineStatus(EngineStatus.Started);
 			moveUnit.moveToTarget(targetCp);
 		}
+		
 		if(moveUnit instanceof Soldier) {
 			LittleCenterPoint lcp = PointUtil.getMinDisLCP(moveUnit.getPositionX()+moveUnit.getCenterOffX(), moveUnit.getPositionY()+moveUnit.getCenterOffY(), targetCp);
 			moveUnit.moveToTarget(lcp);

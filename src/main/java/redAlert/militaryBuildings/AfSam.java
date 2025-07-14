@@ -2,11 +2,14 @@ package redAlert.militaryBuildings;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
+import redAlert.Constructor;
+import redAlert.GameContext;
 import redAlert.ShapeUnitFrame;
 import redAlert.enums.ConstEnum;
 import redAlert.enums.UnitColor;
+import redAlert.other.BuildingBloodBar;
+import redAlert.other.BuildingBone;
 import redAlert.resourceCenter.ShpResourceCenter;
 import redAlert.shapeObjects.Building;
 import redAlert.utilBean.CenterPoint;
@@ -51,18 +54,22 @@ public class AfSam extends Building{
 		super.unitColor = unitColor;
 		super.positionX = positionX;
 		super.positionY = positionY;
-//		super.constructFrameIndex = 0;
-//		super.workingFrameIndex = 0;
-//		super.damagedFrameIndex = 0;
+		super.frameNum = 0;
 		super.status = BuildingStatus.UNDEMAGED;
 		super.stage = BuildingStage.UnderConstruct;
-		curFrame = constructFrames.get(0);
+		this.curFrame = calculateFirstFrame();
 		super.positionMinX = curFrame.getMinX()+positionX;
 		super.positionMinY = curFrame.getMinY()+positionY;
-		//定义唯一编号
-		Random random = new Random();
-		super.unitNo = random.nextInt();
-		super.unitName = "sam";
+		this.curCenterPoint = PointUtil.getCenterPoint(super.positionX+super.centerOffX, super.positionY+super.centerOffY);
+		
+		//初始化血条的信息
+		bloodBar = new BuildingBloodBar(this);
+		Constructor.putOneShapeUnit(bloodBar, GameContext.scenePanel);
+		
+		//初始化骨架的信息
+		bone = new BuildingBone(this);
+		Constructor.putOneShapeUnit(bone, GameContext.scenePanel);
+		
 	}
 	
 	public AfSam(int positionX,int positionY,SceneType sceneType,UnitColor unitColor) {
@@ -84,18 +91,21 @@ public class AfSam extends Building{
 		super.unitColor = unitColor;
 		super.positionX = positionX;
 		super.positionY = positionY;
-//		super.constructFrameIndex = 0;
-//		super.workingFrameIndex = 0;
-//		super.damagedFrameIndex = 0;
+		super.frameNum = 0;
 		super.status = BuildingStatus.UNDEMAGED;
 		super.stage = BuildingStage.UnderConstruct;
-		curFrame = constructFrames.get(0);
+		this.curFrame = calculateFirstFrame();
 		super.positionMinX = curFrame.getMinX()+positionX;
 		super.positionMinY = curFrame.getMinY()+positionY;
-		//定义唯一编号
-		Random random = new Random();
-		super.unitNo = random.nextInt();
-		super.unitName = "sam";
+		this.curCenterPoint = PointUtil.getCenterPoint(super.positionX+super.centerOffX, super.positionY+super.centerOffY);
+		
+		//初始化血条的信息
+		bloodBar = new BuildingBloodBar(this);
+		Constructor.putOneShapeUnit(bloodBar, GameContext.scenePanel);
+		
+		//初始化骨架的信息
+		bone = new BuildingBone(this);
+		Constructor.putOneShapeUnit(bone, GameContext.scenePanel);
 	}
 	
 	/**
@@ -103,6 +113,7 @@ public class AfSam extends Building{
 	 */
 	public void initShpSource(SceneType sceneType) {
 		super.constConfig = ConstEnum.AfSam;
+		super.height = 60;
 		setCenterOffX(50);
 		setCenterOffY(50);
 		if(sceneType==SceneType.TEM) {
@@ -129,6 +140,9 @@ public class AfSam extends Building{
 			super.aniShpPrefixLs.add("gaairc_b");
 			super.aniShpPrefixLs.add("gaairc_a");
 		}
+		//定义显示名称
+		super.unitName = "爱国者飞弹";
+		
 	}
 	
 	/**

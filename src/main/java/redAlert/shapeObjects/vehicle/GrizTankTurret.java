@@ -16,13 +16,21 @@ public class GrizTankTurret extends TankTurret{
 	public GrizTankTurret(GrizTank tank) {
 		super(tank, "gtnktur");
 	}
-
 	
-	boolean firstFire = true;
+	/**
+	 * 上一此开火时的帧计数
+	 * 用于控制开火的速度
+	 */
 	long lastFireFrameIndex = 0;
-	TankShell lastShell = null;//上一发炮弹
-	
-	public final int fireFrameInterval = 200;//开火帧间隔  控制开火的速度
+	/**
+	 * 上一发炮弹
+	 */
+	public TankShell lastShell = null;
+	/**
+	 * 开火帧间隔  
+	 * 用于控制开火的速度
+	 */
+	public final int fireFrameInterval = 200;
 	
 	/**
 	 * 灰熊坦克的开火方法
@@ -44,16 +52,18 @@ public class GrizTankTurret extends TankTurret{
 			long curFrameIndex = MainPanel.frameCount;
 			lastFireFrameIndex = curFrameIndex;
 			
-			Constructor.playOneMusic("bgraatta");
-			
+			Constructor.playOneMusic("bgraatta");//巨炮开火声音
 		}
-		
 	}
 	
 	/**
 	 * 是否满足开火条件
 	 * 
-	 * 不存在上一发炮弹或者上一发炮弹的伤害已结算,则可以开火
+	 * 上一发炮弹伤害已结算
+	 * 建筑物未被摧毁
+	 * 建筑物可见
+	 * 开火帧间隔大于设定值
+	 * 
 	 */
 	public boolean checkFireCondition(Building targetBuilding) {
 		
@@ -62,7 +72,6 @@ public class GrizTankTurret extends TankTurret{
 				return false;
 			}
 		}
-		
 		
 		if(targetBuilding.isEnd()) {//建筑物已经被摧毁
 			return false;

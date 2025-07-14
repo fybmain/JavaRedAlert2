@@ -1,7 +1,5 @@
 package redAlert.shapeObjects;
 
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -13,7 +11,6 @@ import redAlert.enums.UnitColor;
 import redAlert.other.VehicleBloodBar;
 import redAlert.utilBean.CenterPoint;
 import redAlert.utilBean.XunLuBeanAdapter;
-import redAlert.utils.CanvasPainter;
 import redAlert.utils.PointUtil;
 import redAlert.utils.VxlFileReader;
 
@@ -52,10 +49,6 @@ public abstract class Vehicle extends MovableUnit implements Turnable,Attackable
 	 * 当移动过程中被重新指定移动终点,将赋值true
 	 */
 	public boolean resetTarget = false;
-	/**
-	 * 重寻路终止标志,true时遇到这个标志  车辆在到达nextTarget后要停止移动和渲染
-	 */
-	public volatile boolean stopFlag = false;
 	/**
 	 * 寻路锁,避免AWT线程和规划线程同时进行寻路
 	 */
@@ -132,7 +125,7 @@ public abstract class Vehicle extends MovableUnit implements Turnable,Attackable
 		super.positionX = bornCp.getX()-super.centerOffX;
 		super.positionY = bornCp.getY()-super.centerOffY;
 		super.unitColor = unitColor;
-		this.bodyFrames = VxlFileReader.convertPngFileToBuildingFrames(vxlPrefix,16,1);
+		this.bodyFrames = VxlFileReader.convertPngFileToBuildingFrames(vxlPrefix,16,1,unitColor);
 		super.curFrame = bodyFrames.get(curTurn).copy();
 		super.positionMinX = curFrame.getMinX()+positionX;
 		super.positionMinY = curFrame.getMinY()+positionY;
@@ -297,10 +290,6 @@ public abstract class Vehicle extends MovableUnit implements Turnable,Attackable
 	 * 移动一次
 	 */
 	public void moveOneTime() {
-		//旋转炮塔的方向
-//		if(turret!=null) {
-//			turret.turn();
-//		}
 		/**
 		 * 车体方向需旋转到位才能移动
 		 */
@@ -341,21 +330,27 @@ public abstract class Vehicle extends MovableUnit implements Turnable,Attackable
 		CenterPoint newCenterPoint = PointUtil.getCenterPoint(positionX+centerOffX, positionY+centerOffY);
 		//移动过程中的中间点如果发现所在点是已占用点   不更新当前格子状态
 		
-		//将更新占用的代码改为中心点对齐后释放
+		/*
+		 * 当载具来到下一个中心点且完全对齐后,才释放占用预约
+		 * 若是到达终点,还要熄火
+		 */
 		if(nextTargetX==positionX+centerOffX && nextTargetY==positionY+centerOffY && movePath.contains(newCenterPoint)) {
 			newCenterPoint.addVehicle(this);
 			newCenterPoint.exitBook(this);
 			if(newCenterPoint.equals(endTarget)) {
-				System.out.println("到达终点");
 				setEngineStatus(EngineStatus.Stopped);
 			}
 		}
 		
 		//中心点上的坦克  还是要即时更新的  不然会有建筑建造Bug
+		/*
+		 * 当载具移动到新地界,立即释放原地界中心点的载具引用
+		 * 并把当前所在中心点更新为新中心点
+		 */
 		if(!newCenterPoint.equals(curCenterPoint) && movePath.contains(newCenterPoint)) {
 			
 			curCenterPoint.removeUnit(this);
-			newCenterPoint.addVehicle(this);
+			newCenterPoint.addVehicle(this);//这一行代码的合理性存疑
 			speed = 1;
 
 			
@@ -378,18 +373,6 @@ public abstract class Vehicle extends MovableUnit implements Turnable,Attackable
 	public void calculateNextFrame() {
 		//没有下一个位置
 		if(nextTarget==null) {
-			//坦克停止移动时  应检查炮塔方向与车身方向是否一致
-//			if(turret!=null && curTurn!=turret.getCurTurn()) {
-//				turret.turn(turret.getCurTurn(), curTurn);
-//				//把车身和炮塔画一块
-//				BufferedImage image = curFrame.getImg();
-//				Graphics2D g2d = image.createGraphics();
-//				CanvasPainter.clearImage(image);
-//				g2d.drawImage(bodyFrames.get(curTurn).getImg(), 0, 0, null);
-//				g2d.drawImage(turret.getFrames().get(turret.getCurTurn()).getImg(),0,0,null);
-//				super.positionMinX = bodyFrames.get(curTurn).getMinX()+positionX;
-//				super.positionMinY = bodyFrames.get(curTurn).getMinY()+positionY;
-//			}
 			return;
 		}
 		//没有终点
@@ -423,9 +406,6 @@ public abstract class Vehicle extends MovableUnit implements Turnable,Attackable
 					nextTarget = movePath.get(0);
 					resetTarget = false;
 					calAndSetTargetTurn(this, nextTarget);
-//					if(turret!=null) {
-//						turret.calAndSetTargetTurn(this, endTarget);//炮塔的转向是跟着终点的,这跟车体不同
-//					}
 					speed = 1;
 					moveOneTime();
 				}else {//根据当前位置  确认下一个位置
@@ -434,13 +414,6 @@ public abstract class Vehicle extends MovableUnit implements Turnable,Attackable
 					
 					
 					calAndSetTargetTurn(this, nextTarget);//释放预约占用前 计算好下一步的车身转向,需要转动则把自己设置为转向中，这样后边的坦克不会撞上来
-//					if(turret!=null) {
-//						turret.calAndSetTargetTurn(this, endTarget);
-//					}
-					//旋转炮塔的方向
-//					if(turret!=null) {
-//						turret.turn();
-//					}
 					/**
 					 * 车体方向需旋转到位才能移动
 					 */
@@ -449,7 +422,7 @@ public abstract class Vehicle extends MovableUnit implements Turnable,Attackable
 					}
 					
 					//退出预占领
-					curCenterPoint.exitBook(this);
+					curCenterPoint.exitBook(this);//实际上在此以前已经释放了占用预约
 					
 					//先收集一下nextTarget的信息  并放入栈中  后续不再查询nextTarget的信息  避免逻辑错误
 					boolean isVehicleCanOn = nextTarget.isVehicleCanOn();
@@ -565,17 +538,6 @@ public abstract class Vehicle extends MovableUnit implements Turnable,Attackable
 			moveOneTime();
 		}
 		
-		//把车身和炮塔画一块
-//		BufferedImage image = curFrame.getImg();
-//		Graphics2D g2d = image.createGraphics();
-//		CanvasPainter.clearImage(image);
-//		g2d.drawImage(bodyFrames.get(curTurn).getImg(), 0, 0, null);
-//		if(turret!=null) {
-//			g2d.drawImage(turret.getFrames().get(turret.getCurTurn()).getImg(),0,0,null);	
-//		}
-		super.positionMinX = bodyFrames.get(curTurn).getMinX()+positionX;
-		super.positionMinY = bodyFrames.get(curTurn).getMinY()+positionY;
-		
 	}
 	
 	/**
@@ -583,6 +545,7 @@ public abstract class Vehicle extends MovableUnit implements Turnable,Attackable
 	 * 
 	 * 有特殊攻击方法的载具，由载具的实现类重写此方法
 	 */
+	@Override
 	public void attack(Building building) {
 		if(isAttackable()) {
 			if(turret!=null) {

@@ -151,7 +151,7 @@ public class CenterPoint {
 	 * 释放占用   防止把别人的占用的给释放了,所以传个参
 	 * @return
 	 */
-	public synchronized boolean exitBook(Vehicle vehicle) {
+	public boolean exitBook(Vehicle vehicle) {
 		try {
 			lock.lock();
 			if(vehicle.equals(booker)) {//身份核验一致才行

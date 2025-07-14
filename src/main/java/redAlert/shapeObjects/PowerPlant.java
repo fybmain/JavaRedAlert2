@@ -6,6 +6,8 @@ package redAlert.shapeObjects;
  */
 public interface PowerPlant {
 
-	
+	/**
+	 * 获取发电量
+	 */
 	public int getPowerGeneration();
 }

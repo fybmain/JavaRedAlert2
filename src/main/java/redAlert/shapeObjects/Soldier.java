@@ -136,10 +136,6 @@ public abstract class Soldier extends MovableUnit{
 	 */
 	public boolean resetTarget = false;
 	/**
-	 * 重寻路终止标志,遇到这个标志  车辆在到达nextTarget后要停止移动和渲染
-	 */
-	public volatile boolean stopFlag = false;
-	/**
 	 * 寻路锁,避免AWT线程和规划线程同时进行寻路
 	 */
 	public ReentrantLock xunluLock = new ReentrantLock(true);
