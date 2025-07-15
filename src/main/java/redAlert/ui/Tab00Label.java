@@ -19,7 +19,7 @@ import redAlert.resourceCenter.ShpResourceCenter;
 import redAlert.tabIcon.Tab00Manager;
 
 /**
- * 基地按钮
+ * 基地按钮(小房子按钮)
  */
 public class Tab00Label extends JLabel{
 
@@ -54,7 +54,9 @@ public class Tab00Label extends JLabel{
 		mySelf = this;
 		addTimer();
 	}
-	
+	/**
+	 * 当前按钮是否被选中
+	 */
 	public boolean isSelected = true;
 	
 	/**

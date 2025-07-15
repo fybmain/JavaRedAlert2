@@ -40,6 +40,7 @@ import redAlert.shapeObjects.MovableUnit;
 import redAlert.shapeObjects.ShapeUnit;
 import redAlert.shapeObjects.Soldier;
 import redAlert.shapeObjects.Vehicle;
+import redAlert.shapeObjects.Building.BuildingStage;
 import redAlert.tabIcon.Tab00Manager;
 import redAlert.tabIcon.Tab01Manager;
 import redAlert.utilBean.CenterPoint;
@@ -330,6 +331,22 @@ public class MouseEventDeal {
 							return;
 						}
 						
+						/**
+						 * 卖建筑
+						 */
+						if(MainTest.mouseStatus==MouseStatus.Sell) {
+							CenterPoint targetCp = PointUtil.getCenterPoint(coord.getMapX(), coord.getMapY());
+							ShapeUnit shapeUnit = targetCp.mouseClickGetUnit();
+							if(shapeUnit instanceof Building) {
+								Building unit = (Building)shapeUnit;
+								unit.setStage(BuildingStage.Selling);
+							}
+							System.out.println("???");
+							resetMouseStatus(coord);
+							return;
+						}
+						
+						
 						
 						/**
 						 * 军事建筑建造
@@ -563,6 +580,21 @@ public class MouseEventDeal {
 						 * 已选中的建筑取消选中
 						 */
 						ShapeUnitResourceCenter.unselectBuilding();
+						/*
+						 * 如果卖建筑按钮是选中状态,则取消选中
+						 */
+						if(OptionsPanel.sellLabel.isSelected()) {
+							OptionsPanel.sellLabel.setSelected(false);
+							OptionsPanel.sellLabel.repaint();
+						}
+						/*
+						 * 如果修理按钮是选中状态,则取消选中
+						 */
+						if(OptionsPanel.repairLabel.isSelected()) {
+							OptionsPanel.repairLabel.setSelected(false);
+						}
+						
+						
 						resetMouseStatus(coord);
 						//移动一下鼠标  触发一下移动事件
 						Point mousePoint = MouseInfo.getPointerInfo().getLocation();
@@ -771,17 +803,35 @@ public class MouseEventDeal {
 	
 	
 	/**
-	 * 重新初始化鼠标
+	 * 根据外部环境,重新设置鼠标状态变量
+	 * 
+	 * 鼠标的状态应该变为怎样  应该不依赖于当前鼠标状态,而是依赖于外部环境
+	 * 外部环境是指:比如点击了修理或卖建筑按钮、当前有选中单位、鼠标下方有单位等等
 	 */
 	public static void resetMouseStatus(Coordinate coord) {
 		
 		int mapX = coord.getMapX();
 		int mapY = coord.getMapY();
-		/**
-		 * 鼠标的状态应该变为怎样  应该不依赖于当前状态
-		 */
+		
+		CenterPoint centerPoint = PointUtil.getCenterPoint(mapX, mapY);
+		
+		if(OptionsPanel.sellLabel.isSelected()) {//用户点击了卖建筑按钮
+			Building building = centerPoint.getBuilding();
+			
+			if(building!=null) {
+				if(building.getUnitColor()==GlobalConfig.unitColor) {
+					MainTest.mouseStatus = MouseStatus.Sell;
+					return;
+				}
+			}
+			MainTest.mouseStatus = MouseStatus.NoSell;
+			
+			return;
+		}
+		
+		
 		if(ShapeUnitResourceCenter.selectedMovableUnits.isEmpty()) {//没有选中可移动单位时  只可能是空闲或单选
-			CenterPoint centerPoint = PointUtil.getCenterPoint(mapX, mapY);
+			
 			if(!centerPoint.isExistSingleSelectUnit()) {//鼠标处不存在可选中单位->空闲状态
 				MainTest.mouseStatus = MouseStatus.Idle;
 			}else {
@@ -798,7 +848,6 @@ public class MouseEventDeal {
 				}
 			}
 		}else {
-			CenterPoint centerPoint = PointUtil.getCenterPoint(mapX, mapY);
 			
 			if(!centerPoint.isExistSingleSelectUnit()) {//鼠标是否在单位上
 				//单位移动鼠标
@@ -844,8 +893,6 @@ public class MouseEventDeal {
 				}
 				
 			}
-			
-			
 		}
 	}
 	

@@ -9,6 +9,7 @@ import java.util.List;
 import redAlert.Constructor;
 import redAlert.GameContext;
 import redAlert.ShapeUnitFrame;
+import redAlert.enums.BuildingAreaType;
 import redAlert.enums.ConstEnum;
 import redAlert.enums.UnitColor;
 import redAlert.militaryBuildings.AfCnst;
@@ -62,7 +63,7 @@ public abstract class Building extends ShapeUnit implements Bloodable{
 	 * 建设阶段
 	 */
 	public enum BuildingStage{
-		UnderConstruct("建设中"),ConstructComplete("建设完成");
+		UnderConstruct("建设中"),ConstructComplete("建设完成"),Selling("贱卖中");
 		private final String cnDesc;
 		
 		BuildingStage(String cnDesc){
@@ -233,7 +234,9 @@ public abstract class Building extends ShapeUnit implements Bloodable{
 				super.positionMinY = curFrame.getMinY()+positionY;
 				frameIndex++;
 			}
-		}else if(status==BuildingStatus.UNDEMAGED){
+		}else if(stage==BuildingStage.ConstructComplete) {//建设完成
+			
+			if(status==BuildingStatus.UNDEMAGED){
 				BufferedImage curImg = curFrame.getImg();
 				CanvasPainter.clearImage(curImg);
 				Graphics curG2d = curImg.createGraphics();
@@ -280,7 +283,7 @@ public abstract class Building extends ShapeUnit implements Bloodable{
 				if(ShapeUnitResourceCenter.isPowerOn) {
 					frameIndex++;
 				}
-		}else {
+			}else if(status==BuildingStatus.DEMAGED){
 				BufferedImage curImg = curFrame.getImg();
 				CanvasPainter.clearImage(curImg);
 				Graphics curG2d = curImg.createGraphics();
@@ -327,6 +330,54 @@ public abstract class Building extends ShapeUnit implements Bloodable{
 				if(ShapeUnitResourceCenter.isPowerOn) {
 					frameIndex++;
 				}
+			}
+		}else if(stage==BuildingStage.Selling){//卖掉
+			if(frameIndex>=constructFrames.size()) {
+				frameIndex = constructFrames.size()-1;
+				
+				ShapeUnitFrame constFrame = constructFrames.get(frameIndex);
+				BufferedImage curImg = curFrame.getImg();
+				CanvasPainter.clearImage(curImg);
+				curFrame.setMinX(constFrame.getMinX());
+				curFrame.setMaxX(constFrame.getMaxX());
+				curFrame.setMinY(constFrame.getMinY());
+				curFrame.setMaxY(constFrame.getMaxY());
+				curFrame.setRealPartHeight(constFrame.getRealPartHeight());
+				curFrame.setRealPartWidth(constFrame.getRealPartWidth());
+				Graphics2D curG2d = curImg.createGraphics();
+				curG2d.drawImage(constFrame.getImg(), 0, 0, null);
+				curG2d.dispose();
+				giveFrameUnitColor(curImg,constFrame);//上阵营色
+				super.positionMinX = curFrame.getMinX()+positionX;
+				super.positionMinY = curFrame.getMinY()+positionY;
+				frameIndex--;
+			}else if(frameIndex>=0 && frameIndex<constructFrames.size()) {
+				ShapeUnitFrame constFrame = constructFrames.get(frameIndex);
+				BufferedImage curImg = curFrame.getImg();
+				CanvasPainter.clearImage(curImg);
+				curFrame.setMinX(constFrame.getMinX());
+				curFrame.setMaxX(constFrame.getMaxX());
+				curFrame.setMinY(constFrame.getMinY());
+				curFrame.setMaxY(constFrame.getMaxY());
+				curFrame.setRealPartHeight(constFrame.getRealPartHeight());
+				curFrame.setRealPartWidth(constFrame.getRealPartWidth());
+				Graphics2D curG2d = curImg.createGraphics();
+				curG2d.drawImage(constFrame.getImg(), 0, 0, null);
+				curG2d.dispose();
+				giveFrameUnitColor(curImg,constFrame);//上阵营色
+				super.positionMinX = curFrame.getMinX()+positionX;
+				super.positionMinY = curFrame.getMinY()+positionY;
+				frameIndex--;
+			}else if(frameIndex<0){
+				
+				this.end = true;
+				setVisible(false);
+				setEnd(true);
+				getCurCenterPoint().setBuilding(null);//上边的物品
+				ShapeUnitResourceCenter.removeOneBuilding(this);
+				getCurCenterPoint().buildingAreaType = BuildingAreaType.None;
+				
+			}
 		}
 	}
 	

@@ -16,11 +16,14 @@ import redAlert.resourceCenter.ShpResourceCenter;
  */
 public class Mouse {
 
-	public static List<BufferedImage> mouseCursorLs = new ArrayList<>();
+//	public static List<BufferedImage> mouseCursorLs = new ArrayList<>();
 	
 	
 	public static BufferedImage defaultCursorImage;
 	
+	/**
+	 * 鼠标指针集
+	 */
 	public static List<ShapeUnitFrame> mouseShapeFrames;
 	
 	/**
@@ -43,7 +46,6 @@ public class Mouse {
 	 * 
 	 * 当鼠标指针图片宽高大于32*32时，已宽高中较大值，构建正方形图片，再将内容放在中间
 	 * 
-	 * 废弃方法
 	 */
 	public static void initMouseCursor() {
 		mouseShapeFrames = ShpResourceCenter.loadShpResource("mouse", "mousepal", false);	
@@ -55,7 +57,8 @@ public class Mouse {
 	
 	/**
 	 * 获得默认鼠标
-	 * 一个白色指针,可以在右侧控制栏使用
+	 * 一个白色箭头指针,在右侧控制栏(OptionPanel)使用,右侧直接修改JPanel上的Cursor对象进行鼠标指针切换
+	 * 这与左侧MainPanel上有所不同
 	 */
 	public static Cursor getDefaultCursor() {
 		if(defaultCursor==null) {
@@ -123,6 +126,21 @@ public class Mouse {
 	 */
 	public static BufferedImage getUnitNoMoveImage() {
 		ShapeUnitFrame suf = mouseShapeFrames.get(41);
+		return suf.getImg();
+	}
+	/**
+	 * 获取卖建筑指针图片
+	 */
+	public static BufferedImage getSellCursorImage() {
+		int index = 129+(int)MainPanel.frameCount/4%10;
+		ShapeUnitFrame suf = mouseShapeFrames.get(index);
+		return suf.getImg();
+	}
+	/**
+	 * 获取禁卖建筑指针图片
+	 */
+	public static BufferedImage getNoSellCursorImage() {
+		ShapeUnitFrame suf = mouseShapeFrames.get(149);
 		return suf.getImg();
 	}
 	

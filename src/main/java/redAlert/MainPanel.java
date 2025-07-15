@@ -264,6 +264,7 @@ public class MainPanel extends JPanel{
 			@Override
 			public void run() {
 				try {
+					//将绘制线程的优先级调整为最高
 					if(!prioritySetFlag) {
 						Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 						prioritySetFlag = true;
@@ -271,47 +272,10 @@ public class MainPanel extends JPanel{
 					
 					//绘制鼠标图片
 					Point mousePoint = GameContext.scenePanel.getMousePosition();
-					if(mousePoint==null) {
-						/*
-						int lastMoveX = GameContext.scenePanel.getLastMoveX();
-						int lastMoveY = GameContext.scenePanel.getLastMoveY();
-						if(lastMoveX>0) {
-							lastMoveX-=20;
-						}
-						if(lastMoveY>0) {
-							lastMoveY-=15;
-						}
-						mousePoint = new Point(lastMoveX,lastMoveY); 
-						*/
-						CanvasPainter.clearImage(GameContext.scenePanel.mouseCursorImage);
-					}else {
-						if(MainTest.mouseStatus==MouseStatus.Idle) {
-							drawDefaultMouseCursor(mousePoint);
-						}
-						if(MainTest.mouseStatus==MouseStatus.PreSingleSelect) {
-							drawPreSingleSelectMouseCursor(mousePoint);
-						}
-						if(MainTest.mouseStatus==MouseStatus.Construct) {
-							drawDefaultMouseCursor(mousePoint);
-						}
-						if(MainTest.mouseStatus==MouseStatus.Select) {
-							drawDefaultMouseCursor(mousePoint);
-						}
-						if(MainTest.mouseStatus==MouseStatus.UnitMove) {
-							drawUnitMoveMouseCursor(mousePoint);
-						}
-						if(MainTest.mouseStatus==MouseStatus.UnitExpand) {
-							drawUnitExpandCursor(mousePoint);
-						}
-						if(MainTest.mouseStatus==MouseStatus.UnitNoExpand) {
-							drawUnitNoExpandCursor(mousePoint);
-						}
-						if(MainTest.mouseStatus==MouseStatus.UnitNoMove) {
-							drawUnitNoMoveCursor(mousePoint);
-						}
-					}
+					drawMouseCursor(mousePoint);
 					
-					int theSightOffX = viewportOffX;//由于这两个变量变化频繁,所以需要获取一个快照,否则移动视口内容会抖动
+					//获取视口偏移,由于这两个变量变化频繁,所以需要获取一个快照,否则移动视口内容会抖动
+					int theSightOffX = viewportOffX;
 					int theSightOffY = viewportOffY;
 					
 					//绘制地形
@@ -637,6 +601,48 @@ public class MainPanel extends JPanel{
 	private int positionX,positionY;
 	
 	/**
+	 * 画鼠标方法
+	 * 如果鼠标坐标单位为空,不显示鼠标,移除鼠标图片
+	 */
+	public void drawMouseCursor(Point mousePoint) {
+		if(mousePoint!=null) {
+			if(MainTest.mouseStatus==MouseStatus.Idle) {
+				drawDefaultMouseCursor(mousePoint);
+			}
+			if(MainTest.mouseStatus==MouseStatus.PreSingleSelect) {
+				drawPreSingleSelectMouseCursor(mousePoint);
+			}
+			if(MainTest.mouseStatus==MouseStatus.Construct) {
+				drawDefaultMouseCursor(mousePoint);
+			}
+			if(MainTest.mouseStatus==MouseStatus.Select) {
+				drawDefaultMouseCursor(mousePoint);
+			}
+			if(MainTest.mouseStatus==MouseStatus.UnitMove) {
+				drawUnitMoveMouseCursor(mousePoint);
+			}
+			if(MainTest.mouseStatus==MouseStatus.UnitExpand) {
+				drawUnitExpandCursor(mousePoint);
+			}
+			if(MainTest.mouseStatus==MouseStatus.UnitNoExpand) {
+				drawUnitNoExpandCursor(mousePoint);
+			}
+			if(MainTest.mouseStatus==MouseStatus.UnitNoMove) {
+				drawUnitNoMoveCursor(mousePoint);
+			}
+			if(MainTest.mouseStatus==MouseStatus.Sell) {
+				drawSellCursor(mousePoint);
+			}
+			if(MainTest.mouseStatus==MouseStatus.NoSell) {
+				drawNoSellCursor(mousePoint);
+			}
+		}else {
+			CanvasPainter.clearImage(GameContext.scenePanel.mouseCursorImage);
+		}
+		
+	}
+	
+	/**
 	 * 绘制默认样式的鼠标
 	 */
 	private void drawDefaultMouseCursor(Point mouesePoint) {
@@ -708,8 +714,30 @@ public class MainPanel extends JPanel{
 		positionY = mouesePoint.y-21;
 		g2d.dispose();
 	}
-	
-	
+	/**
+	 * 绘制卖建筑样式的鼠标
+	 */
+	private void drawSellCursor(Point mouesePoint) {
+		CanvasPainter.clearImage(this.mouseCursorImage);
+		Graphics2D g2d = this.mouseCursorImage.createGraphics();
+		BufferedImage defaultMouse = Mouse.getSellCursorImage();
+		g2d.drawImage(defaultMouse, 0, 0, null);
+		positionX = mouesePoint.x-27;
+		positionY = mouesePoint.y-21;
+		g2d.dispose();
+	}
+	/**
+	 * 绘制禁卖建筑样式的鼠标
+	 */
+	private void drawNoSellCursor(Point mouesePoint) {
+		CanvasPainter.clearImage(this.mouseCursorImage);
+		Graphics2D g2d = this.mouseCursorImage.createGraphics();
+		BufferedImage defaultMouse = Mouse.getNoSellCursorImage();
+		g2d.drawImage(defaultMouse, 0, 0, null);
+		positionX = mouesePoint.x-27;
+		positionY = mouesePoint.y-21;
+		g2d.dispose();
+	}
 	
 	/**
 	 * 重绘方法  将主画板的内容绘制在窗口中

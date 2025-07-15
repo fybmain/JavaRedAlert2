@@ -74,7 +74,15 @@ public class MainTest {
 		/**
 		 * 禁止移动
 		 */
-		UnitNoMove("禁止移动");
+		UnitNoMove("禁止移动"),
+		/**
+		 * 卖建筑
+		 */
+		Sell("卖建筑"),
+		/**
+		 * 禁止卖建筑
+		 */
+		NoSell("禁卖建筑");
 		
 		private final String cnDesc;
 		
