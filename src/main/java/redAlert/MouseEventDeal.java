@@ -333,16 +333,19 @@ public class MouseEventDeal {
 						}
 						
 						/**
-						 * 卖建筑
+						 * 贱卖建筑
 						 */
 						if(MainTest.mouseStatus==MouseStatus.Sell) {
 							CenterPoint targetCp = PointUtil.getCenterPoint(coord.getMapX(), coord.getMapY());
 							ShapeUnit shapeUnit = targetCp.mouseClickGetUnit();
 							if(shapeUnit instanceof Building) {
 								Building unit = (Building)shapeUnit;
-								unit.setStage(BuildingStage.Selling);
+								if(unit.stage!=BuildingStage.Selling) {
+									unit.setStage(BuildingStage.Selling);
+									Constructor.playOneMusic("uselbuil");
+								}
 							}
-							System.out.println("???");
+							
 							resetMouseStatus(coord);
 							return;
 						}
@@ -819,7 +822,7 @@ public class MouseEventDeal {
 		if(OptionsPanel.sellLabel.isSelected()) {//用户点击了卖建筑按钮
 			Building building = centerPoint.getBuilding();
 			
-			if(building!=null) {
+			if(building!=null && building.stage!=BuildingStage.Selling) {
 				if(building.getUnitColor()==GlobalConfig.unitColor) {
 					MainTest.mouseStatus = MouseStatus.Sell;
 					return;

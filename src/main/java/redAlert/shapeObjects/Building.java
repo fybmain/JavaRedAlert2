@@ -370,12 +370,19 @@ public abstract class Building extends ShapeUnit implements Bloodable{
 				super.positionMinY = curFrame.getMinY()+positionY;
 				frameIndex--;
 			}else if(frameIndex<0){
-				
+				Constructor.playOneMusic("ceva058");
 				this.end = true;
 				setVisible(false);
 				setEnd(true);
 				getCurCenterPoint().setBuilding(null);//上边的物品
 				ShapeUnitResourceCenter.removeOneBuilding(this);
+				this.getBloodBar().setVisible(false);
+				this.getBloodBar().setEnd(true);
+				ShapeUnitResourceCenter.removeOneUnit(bloodBar);
+				this.getBone().setVisible(false);
+				this.getBone().setEnd(true);
+				ShapeUnitResourceCenter.removeOneUnit(bone);
+				
 				getCurCenterPoint().buildingAreaType = BuildingAreaType.None;
 				
 			}
