@@ -779,21 +779,13 @@ public class MainPanel extends JPanel{
 	
 	/**
 	 * 重绘方法  将主画板的内容绘制在窗口中
+	 * Swing的组件,应该重写paintComponent方法  这样没有闪屏问题
 	 */
 	@Override
-	public void paint(Graphics g) {
+	public void paintComponent(Graphics g) {
 		try {
-			super.paint(g);
-//			g.clearRect(0, 0, gameMapWidth, gameMapHeight);
-			
-//			g.drawImage(guidelinesCanvas, 0, 0, this);//画地形
-//			g.drawImage(mainInterface, 0, 0, this);//画场景内物品
-//			g.drawImage(canvasFirst, 0, 0, this);//画指令框和移动线
-//			g.drawImage(mouseCursorImage, positionX, positionY, this);//画鼠标
-			
+			super.paintComponent(g);
 			g.drawImage(canvas, 0, 0, this);
-			
-//			g.drawImage(mouseCursorImage, positionX, positionY, this);//画鼠标
 			g.dispose();
 		} catch (Exception e) {
 			e.printStackTrace();

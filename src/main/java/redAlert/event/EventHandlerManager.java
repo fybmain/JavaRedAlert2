@@ -12,7 +12,7 @@ public class EventHandlerManager {
 	/**
 	 * 事件发布池
 	 */
-	public static ArrayBlockingQueue<RaEvent> eventBlockingQueue = new ArrayBlockingQueue<RaEvent>(100);
+	public static ArrayBlockingQueue<RaEvent> eventBlockingQueue = new ArrayBlockingQueue<RaEvent>(10);
 	
 	/**
 	 * 处理事件的线程池
@@ -36,9 +36,19 @@ public class EventHandlerManager {
 					RaEvent raEvent = eventBlockingQueue.take();
 					if(raEvent instanceof ConstructEvent) {//建筑建造事件
 						ConstructEvent constEvent = (ConstructEvent)raEvent;
-						ConstructEventHandler ce = new ConstructEventHandler(constEvent);
-						threadPoolExecutor.execute(ce);
+						ConstructEventHandler handler = new ConstructEventHandler(constEvent);
+						threadPoolExecutor.execute(handler);
+						continue;
 					}
+					if(raEvent instanceof ConstIconClickEvent) {
+						ConstIconClickEvent iconClickEvent = (ConstIconClickEvent)raEvent;
+						ConstIconClickEventHandler handler = ConstIconClickEventHandler.getInstance(iconClickEvent);
+						threadPoolExecutor.execute(handler);
+						continue;
+					}
+					
+					
+					
 				}catch (Exception e) {
 					e.printStackTrace();
 				}

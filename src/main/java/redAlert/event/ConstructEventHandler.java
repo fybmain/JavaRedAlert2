@@ -38,6 +38,7 @@ import redAlert.utils.PointUtil;
 
 /**
  * 处理军事建筑建造事件
+ * 用户点击右侧建筑icon，再在左边进行建筑建造的事件
  */
 public class ConstructEventHandler extends Thread{
 
