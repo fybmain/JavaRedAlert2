@@ -91,6 +91,7 @@ public class MainPanel extends JPanel{
 	 * 辅助线格
 	 * 早期这个画板用来绘制地形网格,随着后期功能的开发,这个画板改用来绘制地形
 	 */
+	@Deprecated
 	private BufferedImage guidelinesCanvas = new BufferedImage(viewportWidth,viewportHeight,BufferedImage.TYPE_INT_ARGB);
 	/**
 	 * 最终给SWT线程绘制用的画板
@@ -136,8 +137,10 @@ public class MainPanel extends JPanel{
 	 * 帧计数
 	 */
 	public static long frameCount = 0;
-	
-	
+	/**
+	 * 自身引用
+	 */
+	public MainPanel myself;
 	
 	
 	
@@ -152,8 +155,11 @@ public class MainPanel extends JPanel{
 		super.setPreferredSize(new Dimension(viewportWidth,viewportHeight));//首选尺寸
 		
 		GameContext.setMainPanel(this);//暴露一个外部引用
+		this.myself = this;
 		startFrameImageCalculate();//场景物品计算线程启动
-		initGuidelinesCanvas();//初始化辅助线格
+		int theSightOffX = viewportOffX;
+		int theSightOffY = viewportOffY;
+		initGuidelinesCanvas(theSightOffX,theSightOffY);//初始化辅助线格
 		startPainterThread();//启动绘画线程
 	}
 	
@@ -296,7 +302,8 @@ public class MainPanel extends JPanel{
 					int theSightOffX = viewportOffX;
 					int theSightOffY = viewportOffY;
 					
-					//绘制地形
+					
+					//绘制地形（地形的代码块覆盖全图,所以就不用重新清空画板了）
 					drawTerrain(theSightOffX,theSightOffY);
 					//绘制游戏内的ShapeUnit
 					drawMainInterface(theSightOffX,theSightOffY);
@@ -311,7 +318,8 @@ public class MainPanel extends JPanel{
 					g.drawImage(mouseCursorImage, positionX, positionY, GameContext.scenePanel);//画鼠标
 					g.dispose();
 					
-					repaint();
+					myself.repaint();
+					frameCount++;
 					
 				}catch(Exception e) {
 					e.printStackTrace();
@@ -321,12 +329,6 @@ public class MainPanel extends JPanel{
 		timer.schedule(refreshTask, 1L, paintPeriod);
 		
 	}
-	
-	public void repaint() {
-		super.repaint();
-		frameCount++;
-	}
-	
 	
 	/**
 	 * 地形菱形块列表
@@ -339,8 +341,8 @@ public class MainPanel extends JPanel{
 	/**
 	 * 初始化辅助线格
 	 */
-	private void initGuidelinesCanvas() {
-		CanvasPainter.drawGuidelines(guidelinesCanvas);//辅助线网格
+	private void initGuidelinesCanvas(int theSightOffX,int theSightOffY) {
+		CanvasPainter.drawGuidelines(canvas,theSightOffX,theSightOffY);//辅助线网格
 		
 		//读取地形文件
 		try {
@@ -447,8 +449,13 @@ public class MainPanel extends JPanel{
 	
 	/**
 	 *  绘制地形terrain
+	 *  
+	 *  有地形画地形
+	 *  没地形画网格
 	 */
 	private void drawTerrain(int viewportOffX,int viewportOffY) {
+		
+		
 		
 		if(!terrainImageList.isEmpty()) {
 			Graphics2D g2d = canvas.createGraphics();
@@ -480,6 +487,8 @@ public class MainPanel extends JPanel{
 				}
 			}
 			g2d.dispose();
+		}else {
+			CanvasPainter.drawGuidelines(canvas, viewportOffX, viewportOffY);//辅助线网格
 		}
 	}
 	
@@ -511,8 +520,6 @@ public class MainPanel extends JPanel{
 			
 		if(!drawShapeUnitList.isEmpty()) {
 			
-//			CanvasPainter.clearImage(mainInterface);
-//			Graphics2D g2d = mainInterface.createGraphics();
 			Graphics2D g2d = canvas.createGraphics();
 			
 			while(!drawShapeUnitList.isEmpty()) {
@@ -570,14 +577,6 @@ public class MainPanel extends JPanel{
 				
 			}
 			g2d.dispose();
-			
-//			this.repaint();
-			
-//			frameCount++;
-			
-		}else {
-//			防止空屏   这里就不再repaint();
-//			this.repaint();
 		}
 			
 	}
