@@ -77,7 +77,7 @@ public class MainPanel extends JPanel{
 	 * 为什么用阻塞队列:
 	 *   当队列中的元素处理完毕放入规划队列时，此时会阻塞，避免建筑规划线程不停的轮询，减少CPU占用
 	 */
-	public ArrayBlockingQueue<ShapeUnit> shapeUnitBlockingQueue = new ArrayBlockingQueue<ShapeUnit>(100);
+	public ArrayBlockingQueue<ShapeUnit> shapeUnitBlockingQueue = new ArrayBlockingQueue<ShapeUnit>(150);
 	/**
 	 * 主画板
 	 */
@@ -105,14 +105,14 @@ public class MainPanel extends JPanel{
 	 * 当buildingFlag=偶数  此队列为绘制队列
 	 * 当buildingFlag=奇数  此队列为缓存队列
 	 */
-	private PriorityQueue<ShapeUnit> unitList = new PriorityQueue<ShapeUnit>();
+	private PriorityQueue<ShapeUnit> unitList = new PriorityQueue<ShapeUnit>(150);
 	/**
 	 * SHP方块规划队列2
 	 * 两个建筑队列,一个用于绘制画面时，另一个用于缓存下一帧画面
 	 * 当buildingFlag=奇数  此队列为缓存队列
 	 * 当buildingFlag=偶数  此队列为绘制队列
 	 */
-	private PriorityQueue<ShapeUnit> unitList2 = new PriorityQueue<ShapeUnit>();
+	private PriorityQueue<ShapeUnit> unitList2 = new PriorityQueue<ShapeUnit>(150);
 	/**
 	 * SHP方块队列标识
 	 * 用于决定使用1.2哪个队列
@@ -148,6 +148,8 @@ public class MainPanel extends JPanel{
 	 * 
 	 */
 	public MainPanel() {
+		setDoubleBuffered(true);//启用双缓冲
+		
 		super.setLocation(locationX, locationY);
 //		super.setLayout(null);//JPanel的布局默认是FlowLayout
 		super.setSize(viewportWidth, viewportHeight);
@@ -784,6 +786,7 @@ public class MainPanel extends JPanel{
 	@Override
 	public void paintComponent(Graphics g) {
 		try {
+			
 			super.paintComponent(g);
 			g.drawImage(canvas, 0, 0, this);
 			g.dispose();
