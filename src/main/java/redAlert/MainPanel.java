@@ -81,6 +81,7 @@ public class MainPanel extends JPanel{
 	/**
 	 * 主画板
 	 */
+	@Deprecated
 	private BufferedImage mainInterface = new BufferedImage(viewportWidth,viewportHeight,BufferedImage.TYPE_INT_ARGB);
 	/**
 	 * 用来画鼠标、选择框等主画板层面上的内容
@@ -91,6 +92,11 @@ public class MainPanel extends JPanel{
 	 * 早期这个画板用来绘制地形网格,随着后期功能的开发,这个画板改用来绘制地形
 	 */
 	private BufferedImage guidelinesCanvas = new BufferedImage(viewportWidth,viewportHeight,BufferedImage.TYPE_INT_ARGB);
+	/**
+	 * 最终给SWT线程绘制用的画板
+	 */
+	private BufferedImage canvas = new BufferedImage(viewportWidth,viewportHeight,BufferedImage.TYPE_INT_ARGB);
+	
 	
 	
 	/**
@@ -284,9 +290,7 @@ public class MainPanel extends JPanel{
 						prioritySetFlag = true;
 					}
 					
-					//绘制鼠标图片
-					Point mousePoint = GameContext.scenePanel.getMousePosition();
-					drawMouseCursor(mousePoint);
+					
 					
 					//获取视口偏移,由于这两个变量变化频繁,所以需要获取一个快照,否则移动视口内容会抖动
 					int theSightOffX = viewportOffX;
@@ -294,9 +298,20 @@ public class MainPanel extends JPanel{
 					
 					//绘制地形
 					drawTerrain(theSightOffX,theSightOffY);
-					
 					//绘制游戏内的ShapeUnit
 					drawMainInterface(theSightOffX,theSightOffY);
+					//画指令（选中框 预建造占地绿框）
+					Graphics g = canvas.getGraphics();
+					g.drawImage(canvasFirst, 0, 0, null);//画指令框和移动线
+					
+					
+					//绘制鼠标图片
+					Point mousePoint = GameContext.scenePanel.getMousePosition();
+					drawMouseCursor(mousePoint);
+					g.drawImage(mouseCursorImage, positionX, positionY, GameContext.scenePanel);//画鼠标
+					g.dispose();
+					
+					repaint();
 					
 				}catch(Exception e) {
 					e.printStackTrace();
@@ -305,6 +320,11 @@ public class MainPanel extends JPanel{
 		};
 		timer.schedule(refreshTask, 1L, paintPeriod);
 		
+	}
+	
+	public void repaint() {
+		super.repaint();
+		frameCount++;
 	}
 	
 	
@@ -400,7 +420,7 @@ public class MainPanel extends JPanel{
 				String mapText = FileUtils.readFileToString(new File(GlobalConfig.mapFilePath), "UTF-8");
 				String [] strs = StringUtils.split(mapText,"$");
 				
-				Graphics2D g2d = guidelinesCanvas.createGraphics();
+				Graphics2D g2d = canvas.createGraphics();
 				
 				for(int i=0;i<strs.length;i++) {
 					String info = strs[i];
@@ -431,7 +451,7 @@ public class MainPanel extends JPanel{
 	private void drawTerrain(int viewportOffX,int viewportOffY) {
 		
 		if(!terrainImageList.isEmpty()) {
-			Graphics2D g2d = guidelinesCanvas.createGraphics();
+			Graphics2D g2d = canvas.createGraphics();
 			//一类中心点
 			for(int m=0;m<50;m++) {
 				int y = 15+30*m;
@@ -491,8 +511,9 @@ public class MainPanel extends JPanel{
 			
 		if(!drawShapeUnitList.isEmpty()) {
 			
-			CanvasPainter.clearImage(mainInterface);
-			Graphics2D g2d = mainInterface.createGraphics();
+//			CanvasPainter.clearImage(mainInterface);
+//			Graphics2D g2d = mainInterface.createGraphics();
+			Graphics2D g2d = canvas.createGraphics();
 			
 			while(!drawShapeUnitList.isEmpty()) {
 				ShapeUnit shp = drawShapeUnitList.poll();
@@ -550,9 +571,9 @@ public class MainPanel extends JPanel{
 			}
 			g2d.dispose();
 			
-			this.repaint();
+//			this.repaint();
 			
-			frameCount++;
+//			frameCount++;
 			
 		}else {
 //			防止空屏   这里就不再repaint();
@@ -764,12 +785,16 @@ public class MainPanel extends JPanel{
 	public void paint(Graphics g) {
 		try {
 			super.paint(g);
-			g.clearRect(0, 0, gameMapWidth, gameMapHeight);
+//			g.clearRect(0, 0, gameMapWidth, gameMapHeight);
 			
-			g.drawImage(guidelinesCanvas, 0, 0, this);//画地形
-			g.drawImage(mainInterface, 0, 0, this);//画场景内物品
-			g.drawImage(canvasFirst, 0, 0, this);//画指令框和移动线
-			g.drawImage(mouseCursorImage, positionX, positionY, this);//画鼠标
+//			g.drawImage(guidelinesCanvas, 0, 0, this);//画地形
+//			g.drawImage(mainInterface, 0, 0, this);//画场景内物品
+//			g.drawImage(canvasFirst, 0, 0, this);//画指令框和移动线
+//			g.drawImage(mouseCursorImage, positionX, positionY, this);//画鼠标
+			
+			g.drawImage(canvas, 0, 0, this);
+			
+//			g.drawImage(mouseCursorImage, positionX, positionY, this);//画鼠标
 			g.dispose();
 		} catch (Exception e) {
 			e.printStackTrace();

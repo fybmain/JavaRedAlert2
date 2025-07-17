@@ -134,7 +134,15 @@ public class Atest1 {
 //		String a = URLDecoder.decode("%e4%b8%ad%e6%96%87", "UTF-8");
 //		System.out.println(a);
 		
+		long a = 1;
+		int b = 1;
 		
+		long d = -1;
+		long a1 = a<<32;
+		long b1 = b;
 		
+		System.out.println(Integer.MAX_VALUE);
+		System.out.println(a1 | b1);
+		System.out.println(a1);
 	}
 }

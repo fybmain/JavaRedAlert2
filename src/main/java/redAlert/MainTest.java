@@ -1,10 +1,12 @@
 package redAlert;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 
 import javax.swing.JFrame;
 
 import redAlert.enums.UnitColor;
+import redAlert.event.EventHandlerManager;
 import redAlert.militaryBuildings.AfPill;
 import redAlert.militaryBuildings.AfTech;
 import redAlert.other.Mouse;
@@ -120,6 +122,10 @@ public class MainTest {
 		jf.setVisible(true);//JFrame默认不可见,设置为可见
 		jf.pack();
 		
+		/*
+		 * 红警事件管理器
+		 */
+		EventHandlerManager.init();
 		/**
 		 * 鼠标事件的处理
 		 */
@@ -332,6 +338,8 @@ public class MainTest {
 			gtank.attack(targetPill2);
 		}
 		
+//		-Xms1024m
+//		-XX:+UseG1GC -XX:MaxGCPauseMillis=1
 		
 		
 //		TankShell ts = new TankShell(200,200,500,500);
