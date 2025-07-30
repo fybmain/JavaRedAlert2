@@ -21,6 +21,9 @@ public class DrawableUtil {
 	public static void drawOneSufAtPosition(GLAutoDrawable drawable,ShapeUnitFrame frame,int positionX,int positionY,int viewportOffX,int viewportOffY) {
 		GL2 gl = drawable.getGL().getGL2();
         
+		gl.glEnable(GL2.GL_BLEND);//启用颜色混合功能
+		gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);//表示使用源颜色的alpha值来作为因子  表示用1.0减去源颜色的alpha值来作为因子
+		
         BufferedImage image = frame.getImg();
         int imageWidth = image.getWidth();
         int imageHeight = image.getHeight();
@@ -59,6 +62,8 @@ public class DrawableUtil {
         gl.glEnd();
         gl.glFlush();//不调用就会内存占用飙升
         
+        gl.glDisable(GL2.GL_BLEND);//启用颜色混合功能
+        
         if(!frame.isShouldBeLoadedToGpu()) {
         	int[] textures = new int[]{textureId};
         	gl.glDeleteTextures(1, textures, 0);
@@ -86,7 +91,9 @@ public class DrawableUtil {
 	public static void drawOneImgAtPosition(GLAutoDrawable drawable,BufferedImage image,int positionX,int positionY,int viewportOffX,int viewportOffY) {
 		
 		GL2 gl = drawable.getGL().getGL2();
-        
+		gl.glEnable(GL2.GL_BLEND);//启用颜色混合功能
+		gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);//表示使用源颜色的alpha值来作为因子  表示用1.0减去源颜色的alpha值来作为因子
+		
         int textureId = newTextureId(gl);
         
         gl.glBindTexture(GL2.GL_TEXTURE_2D, textureId);
@@ -110,6 +117,8 @@ public class DrawableUtil {
         gl.glTexCoord2f(1.0f, 1.0f); gl.glVertex2f( viewX+image.getWidth(), viewY+image.getHeight());
         gl.glTexCoord2f(0.0f, 1.0f); gl.glVertex2f( viewX, viewY+image.getHeight());
         gl.glEnd();
+        
+        gl.glDisable(GL2.GL_BLEND);//启用颜色混合功能
         
         int[] textures = new int[]{textureId};
         gl.glDeleteTextures(1, textures, 0);
