@@ -10,7 +10,6 @@ import java.util.Random;
 import java.util.concurrent.locks.ReentrantLock;
 
 import redAlert.Constructor;
-import redAlert.GameContext;
 import redAlert.ShapeUnitFrame;
 import redAlert.enums.Direction;
 import redAlert.enums.UnitColor;
@@ -195,7 +194,7 @@ public abstract class Soldier extends MovableUnit{
 		//步兵的血条
 		SoldierBloodBar bar = new SoldierBloodBar(this);
 		super.bloodBar = bar;
-		Constructor.putOneShapeUnit(bar, GameContext.scenePanel);
+		Constructor.putOneShapeUnit(bar);
 	}
 	
 	/**

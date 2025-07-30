@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Set;
 
 import redAlert.Constructor;
-import redAlert.GameContext;
 import redAlert.other.MoveLine;
 import redAlert.resourceCenter.ShapeUnitResourceCenter;
 import redAlert.shapeObjects.MovableUnit;
@@ -234,7 +233,7 @@ public class MoveUtil {
 		planList.add(plan);
 		ShapeUnitResourceCenter.removeAllMoveLine();
 		MoveLine moveLine = new MoveLine(planList);
-		Constructor.putOneShapeUnit(moveLine, GameContext.getMainPanel());
+		Constructor.putOneShapeUnit(moveLine);
 	}
 	/**
 	 * 画多条移动线
@@ -242,7 +241,7 @@ public class MoveUtil {
 	public static void createManyMoveLine(List<MovePlan> movePlans) {
 		ShapeUnitResourceCenter.removeAllMoveLine();
 		MoveLine moveLine = new MoveLine(movePlans);
-		Constructor.putOneShapeUnit(moveLine, GameContext.getMainPanel());
+		Constructor.putOneShapeUnit(moveLine);
 	}
 	
 	

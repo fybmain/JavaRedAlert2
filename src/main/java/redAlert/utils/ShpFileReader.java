@@ -284,7 +284,6 @@ public class ShpFileReader {
 								curX = list.get(i).minIndexX;
 								pixelBytes = Arrays.copyOfRange(restBytes, 0, restBytes.length);
 							}
-							curY++;//后续采用++的方式
 							//绘图
 							for(int b=0;b<pixelBytes.length;b++) {
 								if(pixelBytes[b]==0 && (b+1)<pixelBytes.length && (pixelBytes[b+1] & 0xFF)>0) {
@@ -296,7 +295,7 @@ public class ShpFileReader {
 									b++;
 								}else {
 									int colorIndex = pixelBytes[b] & 0xFF;
-											
+									
 									targetImage.setRGB(curX, curY, colorArray[colorIndex]);
 									
 									if(isUseUnitColor) {
@@ -309,6 +308,9 @@ public class ShpFileReader {
 									curX++;
 								}
 							}
+							
+							curY++;//应该放在这里才是正确的
+							
 						}
 					}
 				}
@@ -398,7 +400,7 @@ public class ShpFileReader {
 	public static void main(String[] args) throws Exception{
 		//long t1 = System.currentTimeMillis();
 		
-		test1("nukedie","E:/xxx",SceneType.ANIM.getPalPrefix());
+//		test1("nukedie","E:/xxx",SceneType.ANIM.getPalPrefix());
 		
 		//test1("D:\\redAlertFile\\shp\\ntcnstmk.shp","D:/redAlertFile/my/苏联/A0基地展开","ntcnstmk");
 		//test1("D:\\redAlertFile\\shp\\ntpowrmk.shp","D:/redAlertFile/my/苏联/A01发电厂","ntpowrmk");

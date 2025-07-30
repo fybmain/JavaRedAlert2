@@ -2,7 +2,6 @@ package redAlert.shapeObjects;
 
 import redAlert.shapeObjects.vehicle.VehicleUtil;
 import redAlert.utilBean.CenterPoint;
-import redAlert.utils.PointUtil;
 
 /**
  * 表示可转动

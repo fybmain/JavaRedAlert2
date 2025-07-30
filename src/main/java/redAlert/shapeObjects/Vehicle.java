@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 import redAlert.Constructor;
-import redAlert.GameContext;
 import redAlert.ShapeUnitFrame;
 import redAlert.enums.BuildingAreaType;
 import redAlert.enums.UnitColor;
@@ -137,7 +136,7 @@ public abstract class Vehicle extends MovableUnit implements Turnable,Attackable
 		}
 		//血条
 		super.bloodBar = new VehicleBloodBar(this);
-		Constructor.putOneShapeUnit(super.bloodBar, GameContext.scenePanel);
+		Constructor.putOneShapeUnit(super.bloodBar);
 	}
 	
 	/**

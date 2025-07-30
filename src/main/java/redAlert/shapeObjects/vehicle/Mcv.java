@@ -77,7 +77,7 @@ public class Mcv extends Vehicle implements Expandable{
 				this.setVisible(false);
 				this.setEnd(true);
 				AfCnst afCnst = new AfCnst(cp,GlobalConfig.sceneType, GlobalConfig.unitColor);
-				Constructor.putOneBuilding(afCnst,GameContext.getMainPanel());//盟军基地
+				Constructor.putOneBuilding(afCnst);//盟军基地
 				try {
 					Thread.sleep(50);
 					Constructor.playOneMusic("ceva049");//New construction options
