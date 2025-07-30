@@ -427,7 +427,7 @@ public class ShapeUnitResourceCenter {
 						while(true) {
 							CenterPoint tankCp = gtank.getCurCenterPoint();
 							Thread.sleep(0);
-							System.out.println("???"+RandomUtil.newUnitNo());
+//							System.out.println("???"+RandomUtil.newUnitNo());
 							if(!tankCp.equals(bornCp) && !tankCp.equals(bornCp.getRightDn()) && !tankCp.equals(bornCp.getRightDn().getRightDn())) {
 								break;
 							}
