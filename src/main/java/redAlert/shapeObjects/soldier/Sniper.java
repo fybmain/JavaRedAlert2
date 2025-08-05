@@ -9,17 +9,11 @@ import redAlert.utilBean.LittleCenterPoint;
 /**
  * 表示狙击手
  */
-public class Sniper extends Soldier{
+public class Sniper extends Soldier {
 	
 	public Sniper(LittleCenterPoint lcp,UnitColor color) {
 		
-		super(lcp,"snipe",color);
-		super.centerOffX = 56;
-		super.centerOffY = 40;
-		super.positionX = lcp.x - centerOffX;
-		super.positionY =  lcp.y - centerOffY;
-		super.positionMinX = curFrame.getMinX()+positionX;
-		super.positionMinY = curFrame.getMinY()+positionY;
+		super(lcp,"snipe",color, 56, 40);
 		
 		//定义唯一编号
 		super.unitName = "狙击手";

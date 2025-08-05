@@ -1,4 +1,4 @@
-package redAlert;
+package redAlert.renderer.gl2;
 
 import java.awt.Dimension;
 import java.awt.Graphics2D;
@@ -22,6 +22,11 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.util.FPSAnimator;
 
+import redAlert.GlobalConfig;
+import redAlert.MouseEventDeal;
+import redAlert.RuntimeParameter;
+import redAlert.ShapeUnitFrame;
+import redAlert.SysConfig;
 import redAlert.enums.MouseStatus;
 import redAlert.militaryBuildings.AfWeap;
 import redAlert.other.Mouse;
@@ -29,13 +34,12 @@ import redAlert.other.MouseCursorObject;
 import redAlert.other.MoveLine;
 import redAlert.other.Place;
 import redAlert.shapeObjects.ShapeUnit;
-import redAlert.task.ShapeUnitCalculateTask;
+import redAlert.shapeObjects.Soldier;
 import redAlert.utilBean.CenterPoint;
 import redAlert.utilBean.Coordinate;
 import redAlert.utilBean.MovePlan;
 import redAlert.utils.CanvasPainter;
 import redAlert.utils.CoordinateUtil;
-import redAlert.utils.DrawableUtil;
 import redAlert.utils.PointUtil;
 import redAlert.utils.TmpFileReader;
 
@@ -44,45 +48,40 @@ import redAlert.utils.TmpFileReader;
  * 基于OpenGL渲染的游戏场景画板
  *
  */
-public class MainPanel extends GLJPanel{
+public class RenderPanel extends GLJPanel{
 	
 	private static final long serialVersionUID = 1L;
 	
 	/**
-	 * 自身引用
+	 * 地形菱形块列表
 	 */
-	public MainPanel myself;
+	public List<BufferedImage> terrainImageList = new ArrayList<>();
+	/**
+	 * 地形菱形块名称列表
+	 */
+	public List<String> terrainNameList = new ArrayList<>();
 	/**
 	 * 临时画板   最终将移除此画板,但是现在还没改完
 	 */
-	public BufferedImage canvas = new BufferedImage(SysConfig.viewportWidth,SysConfig.viewportHeight,BufferedImage.TYPE_INT_ARGB);
-	
-	
+	public BufferedImage canvas = new BufferedImage(SysConfig.viewportWidth, SysConfig.viewportHeight, BufferedImage.TYPE_INT_ARGB);
+
 	/**
 	 * 执行画板初始化
 	 */
-	public MainPanel() {
-		
+	public RenderPanel(GL2Renderer renderer) {
 		final GLProfile profile = GLProfile.get(GLProfile.GL2);
 		GLCapabilities capabilities = new GLCapabilities(profile);
 		this.setRequestedGLCapabilities(capabilities);
-		PanelGlListener listener = new PanelGlListener(this);//处理页面渲染的
+		PanelGlListener listener = new PanelGlListener(this, renderer); //处理页面渲染的
 		this.addGLEventListener(listener);
-		
-		
+
 		super.setLocation(SysConfig.locationX, SysConfig.locationY);
 //		super.setLayout(null);//JPanel的布局默认是FlowLayout
 		super.setSize(SysConfig.viewportWidth, SysConfig.viewportHeight);
 		super.setMinimumSize(new Dimension(SysConfig.viewportWidth,SysConfig.viewportHeight));//最小尺寸
 		super.setPreferredSize(new Dimension(SysConfig.viewportWidth,SysConfig.viewportHeight));//首选尺寸
 		
-		this.myself = this;
-		
-		//游戏场景物品计算任务
-		ShapeUnitCalculateTask calculateTask = new ShapeUnitCalculateTask(RuntimeParameter.shapeUnitBlockingQueue);
-		calculateTask.startCalculateTask();
-		
-		this.setCursor(Mouse.getNoneCursor());//隐藏鼠标
+		this.setCursor(Mouse.getNoneCursor()); //隐藏系统鼠标，由OpenGL绘制
 		
 		int theSightOffX = RuntimeParameter.viewportOffX;
 		int theSightOffY = RuntimeParameter.viewportOffY;
@@ -97,14 +96,6 @@ public class MainPanel extends GLJPanel{
 		
 	}
 	
-	/**
-	 * 地形菱形块列表
-	 */
-	public List<BufferedImage> terrainImageList = new ArrayList<>();
-	/**
-	 * 地形菱形块名称列表
-	 */
-	public List<String> terrainNameList = new ArrayList<>();
 	/**
 	 * 初始化辅助线格
 	 */
@@ -220,9 +211,6 @@ public class MainPanel extends GLJPanel{
 	 *  没地形画网格
 	 */
 	public void drawTerrain(GLAutoDrawable drawable,int viewportOffX,int viewportOffY) {
-		
-		
-		
 		if(!terrainImageList.isEmpty()) {
 			Graphics2D g2d = canvas.createGraphics();
 			//一类中心点
@@ -254,12 +242,12 @@ public class MainPanel extends GLJPanel{
 			}
 			g2d.dispose();
 			
-			DrawableUtil.drawOneImgAtPosition(drawable, canvas, 0, 0, 0, 0);
+			DrawUtil.drawOneImgAtPosition(drawable, canvas, 0, 0, 0, 0);
 			
 		}else {
 			CanvasPainter.drawGuidelines(canvas, viewportOffX, viewportOffY);//辅助线网格
 			
-			DrawableUtil.drawOneImgAtPosition(drawable, canvas, 0, 0, 0, 0);
+			DrawUtil.drawOneImgAtPosition(drawable, canvas, 0, 0, 0, 0);
 		}
 	}
 	
@@ -295,6 +283,14 @@ public class MainPanel extends GLJPanel{
 			
 			while(!drawShapeUnitList.isEmpty()) {
 				ShapeUnit shp = drawShapeUnitList.poll();
+				if(shp instanceof Soldier) {
+					RuntimeParameter.addUnitToQueue(shp);//放回规划队列,不进行绘制
+					continue;
+				}
+				if(shp.getCurFrame()==null) {
+					System.out.printf("%d: %s 当前帧为空", shp.unitNo, shp.unitName);
+					continue;
+				}
 				if(shp instanceof AfWeap) {
 					AfWeap afweap = (AfWeap)shp;
 					/**
@@ -309,19 +305,19 @@ public class MainPanel extends GLJPanel{
 							RuntimeParameter.addUnitToQueue(shp);//放回规划队列,不进行绘制
 							continue;
 						}else {
-							DrawableUtil.drawOneShpAtPosition(drawable, shp, viewportOffX, viewportOffY);
+							DrawUtil.drawOneShpAtPosition(drawable, shp, viewportOffX, viewportOffY);
 							RuntimeParameter.addUnitToQueue(shp);//放回规划队列
 						}
 					}else{//子建筑
 						
-						DrawableUtil.drawOneShpAtPosition(drawable, shp, viewportOffX, viewportOffY);
+						DrawUtil.drawOneShpAtPosition(drawable, shp, viewportOffX, viewportOffY);
 						RuntimeParameter.addUnitToQueue(shp);//放回规划队列
 					}
 				}else {
 					
 					if(shp.isVisible()) {
 						
-						DrawableUtil.drawOneShpAtPosition(drawable, shp, viewportOffX, viewportOffY);
+						DrawUtil.drawOneShpAtPosition(drawable, shp, viewportOffX, viewportOffY);
 						
 						//画移动线
 						if(shp instanceof MoveLine) {
@@ -338,7 +334,7 @@ public class MainPanel extends GLJPanel{
 								int endxViewX = CoordinateUtil.getViewportX(endx, viewportOffX);
 								int endxViewY = CoordinateUtil.getViewportY(endy, viewportOffY);
 								
-								DrawableUtil.drawMoveLine(drawable, startViewX, startViewY, endxViewX, endxViewY);
+								DrawUtil.drawMoveLine(drawable, startViewX, startViewY, endxViewX, endxViewY);
 							}
 						}
 					}
@@ -348,7 +344,6 @@ public class MainPanel extends GLJPanel{
 			}
 			g2d.dispose();
 		}
-			
 	}
 	
 	/**
@@ -356,12 +351,12 @@ public class MainPanel extends GLJPanel{
 	 */
 	public void drawMouseCursor(GLAutoDrawable drawable) {
 		
-		Point mousePoint = myself.getMousePosition();
+		Point mousePoint = this.getMousePosition();
 		if(mousePoint!=null) {
 			MouseCursorObject cursor = Mouse.getMouseCursor(RuntimeParameter.mouseStatus);
 			int positionX = mousePoint.x-cursor.getOffX();
 			int positionY = mousePoint.y-cursor.getOffY();
-			DrawableUtil.drawOneSufAtPosition(drawable, cursor.getMouse(), positionX, positionY,0,0);
+			DrawUtil.drawOneSufAtPosition(drawable, cursor.getMouse(), positionX, positionY,0,0);
 		}
 	}
 	
@@ -371,7 +366,7 @@ public class MainPanel extends GLJPanel{
 	public void drawRhombus(GLAutoDrawable drawable,int viewportOffX,int viewportOffY) {
 		
 		if(RuntimeParameter.mouseStatus == MouseStatus.Construct) {
-			Point mousePoint = myself.getMousePosition();
+			Point mousePoint = this.getMousePosition();
 			if(mousePoint!=null) {
 				Coordinate coord = CoordinateUtil.getCoordinate(mousePoint.x, mousePoint.y);
 				CenterPoint centerPoint = coord.getCenterPoint();
@@ -488,7 +483,7 @@ public class MainPanel extends GLJPanel{
 		int positionX = centerPoint.getX()-30;
 		int positionY = centerPoint.getY()-14;
 		
-		DrawableUtil.drawOneSufAtPosition(drawable, suf, positionX, positionY, viewportOffX, viewportOffY);
+		DrawUtil.drawOneSufAtPosition(drawable, suf, positionX, positionY, viewportOffX, viewportOffY);
 	}
 	
 	/**
@@ -499,14 +494,14 @@ public class MainPanel extends GLJPanel{
 		if(RuntimeParameter.mouseStatus == MouseStatus.Select) {
 			int pressX = RuntimeParameter.pressX;
 			int pressY = RuntimeParameter.pressY;
-			Point mousePoint = myself.getMousePosition();
+			Point mousePoint = this.getMousePosition();
 			if(mousePoint!=null) {
 				int endMouseX = mousePoint.x;
 				int endMouseY = mousePoint.y;
-				DrawableUtil.drawLine(drawable, pressX, pressY, endMouseX, pressY);
-				DrawableUtil.drawLine(drawable, endMouseX, pressY, endMouseX, endMouseY);
-				DrawableUtil.drawLine(drawable, endMouseX, endMouseY, pressX, endMouseY);
-				DrawableUtil.drawLine(drawable, pressX, endMouseY, pressX, pressY);
+				DrawUtil.drawLine(drawable, pressX, pressY, endMouseX, pressY);
+				DrawUtil.drawLine(drawable, endMouseX, pressY, endMouseX, endMouseY);
+				DrawUtil.drawLine(drawable, endMouseX, endMouseY, pressX, endMouseY);
+				DrawUtil.drawLine(drawable, pressX, endMouseY, pressX, pressY);
 			}
 		}
 	}
@@ -517,12 +512,14 @@ public class MainPanel extends GLJPanel{
  * JOGL负责渲染画面
  */
 class PanelGlListener implements GLEventListener{
-
 	
-	public MainPanel panel = null;
+	public final RenderPanel panel;
 	
-	public PanelGlListener(MainPanel panel) {
+	public final GL2Renderer renderer;
+	
+	public PanelGlListener(RenderPanel panel, GL2Renderer renderer) {
 		this.panel = panel;
+		this.renderer = renderer;
 	}
 	
 	/**
@@ -539,8 +536,6 @@ class PanelGlListener implements GLEventListener{
 		gl.glOrtho(0, SysConfig.viewportWidth, SysConfig.viewportHeight, 0, 1, -1);//坐标系统的设置 X方向从左到右  Y方向从上到下
 		gl.glMatrixMode(GL2.GL_MODELVIEW);//对模型视景矩阵堆栈应用随后的矩阵操作
 	}
-
-	
 	
 	/**
 	 * 渲染每一帧的画面  由此方法实现
@@ -548,9 +543,12 @@ class PanelGlListener implements GLEventListener{
 	@Override
 	public void display(GLAutoDrawable drawable) {
 		GL2 gl = drawable.getGL().getGL2();
-		gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);//设置glClear函数调用时覆盖颜色缓冲区的颜色值
+		gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f); //glClear时的颜色缓冲默认值
+		gl.glClearDepth(1.0f); //glClear时的深度缓冲默认值
         gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);//清除颜色缓冲区和深度缓冲区
 		
+        renderer.rendererSwapGameFrame();
+        FrameData frame = renderer.getFrameDataForRenderer();
         //获取视口偏移,由于这两个变量变化频繁,所以需要获取一个快照,否则移动视口内容会抖动
 		int theSightOffX = RuntimeParameter.viewportOffX;
 		int theSightOffY = RuntimeParameter.viewportOffY;
@@ -559,6 +557,7 @@ class PanelGlListener implements GLEventListener{
 		panel.drawTerrain(drawable,theSightOffX,theSightOffY);
 		//绘制游戏内的ShapeUnit
 		panel.drawMainInterface(drawable,theSightOffX,theSightOffY);
+		DrawUtil.applyShpDrawStates(drawable.getGL(), frame);
 		//绘制预建造菱形红绿块
 		panel.drawRhombus(drawable,theSightOffX,theSightOffY);
 		//绘制选择框

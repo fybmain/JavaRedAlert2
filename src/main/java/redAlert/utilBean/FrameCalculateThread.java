@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import redAlert.GameContext;
-import redAlert.MainPanel;
 import redAlert.RuntimeParameter;
 import redAlert.militaryBuildings.AfWeap;
 import redAlert.resourceCenter.ShapeUnitResourceCenter;

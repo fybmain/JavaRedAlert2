@@ -31,4 +31,8 @@ public class SysConfig {
 	public static final int gameMapWidth = 6000;
 	public static final int gameMapHeight = 4000;
 	
+	/**
+	 * 逻辑图层数量（同一地面坐标上的图层数）
+	 */
+	public static final int numImageLayers = 32;
 }

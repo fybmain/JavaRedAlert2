@@ -1,6 +1,7 @@
 package redAlert;
 
 import java.awt.BorderLayout;
+import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -10,12 +11,16 @@ import redAlert.event.EventHandlerManager;
 import redAlert.militaryBuildings.AfPill;
 import redAlert.other.Mouse;
 import redAlert.other.Place;
+import redAlert.renderer.IRenderer;
+import redAlert.renderer.gl2.GL2Renderer;
+import redAlert.resourceCenter.RenderResourceCenter;
 import redAlert.resourceCenter.ShapeUnitResourceCenter;
 import redAlert.shapeObjects.Building.SceneType;
 import redAlert.shapeObjects.soldier.Sniper;
 import redAlert.shapeObjects.vehicle.GrizTank;
 import redAlert.shapeObjects.vehicle.Mcv;
 import redAlert.shapeObjects.vehicle.XiniuTank2;
+import redAlert.task.ShapeUnitCalculateTask;
 import redAlert.utilBean.CenterPoint;
 import redAlert.utilBean.LittleCenterPoint;
 import redAlert.utils.PointUtil;
@@ -43,7 +48,9 @@ public class MainTest {
 		//游戏主界面
 		JPanel scenePanel = null;
 		if(isUseOpenGL) {
-			scenePanel = new MainPanel();//基于OpenGL的渲染
+			IRenderer renderer = new GL2Renderer(); //基于OpenGL的渲染
+			RenderResourceCenter.renderer = renderer;
+			scenePanel = (JPanel) renderer.getTargetComponent();
 		}else {
 			scenePanel = new MainPanelJava();//基于JavaSwing的渲染
 		}
@@ -78,8 +85,8 @@ public class MainTest {
 		 */
 		ShapeUnitResourceCenter.startDamageCalculate();
 		
-		
-		
+		//游戏场景物品计算任务
+		RuntimeParameter.gameLogicThread.startCalculateTask();
 		
 		
 		int time = 2000;
@@ -215,32 +222,33 @@ public class MainTest {
 		
 		
 		
-		
-		CenterPoint cp1 = PointUtil.getCenterPoint(800, 600);
-		CenterPoint cp2 = PointUtil.getCenterPoint(700, 600);
-		CenterPoint cp3 = PointUtil.getCenterPoint(650, 650);
-		CenterPoint cp4 = PointUtil.getCenterPoint(375, 620);
-		
-		LittleCenterPoint lcp1Up = cp1.getUpLittleCenterPoint();
-		Sniper sniper1Lcp1Up = new Sniper(lcp1Up,UnitColor.Red);
-		sniper1Lcp1Up.setUnitName("狙击手0");
-		LittleCenterPoint lcp1Right = cp1.getRightLittleCenterPoint();
-		Sniper sniper1Lcp1Right = new Sniper(lcp1Right,UnitColor.Red);
-		sniper1Lcp1Right.setUnitName("狙击手2");
-		
-		Constructor.putOneShapeUnit(sniper1Lcp1Up);//狙击手
-		Constructor.putOneShapeUnit(sniper1Lcp1Right);//狙击手
-		
-		
-		LittleCenterPoint lcpRight = cp2.getRightLittleCenterPoint();
-		Sniper sniper3 = new Sniper(lcpRight,UnitColor.Red);
-		sniper3.setUnitName("狙击手3");
-		Constructor.putOneShapeUnit(sniper3);//狙击手
-		
-		LittleCenterPoint lcpDown = cp3.getDownLittleCenterPoint();
-		Sniper sniper4 = new Sniper(lcpDown,UnitColor.Red);
-		sniper4.setUnitName("狙击手4");
-		Constructor.putOneShapeUnit(sniper4);//狙击手
+		RuntimeParameter.gameLogicThread.remoteInvoke(() -> {			
+			CenterPoint cp1 = PointUtil.getCenterPoint(800, 600);
+			CenterPoint cp2 = PointUtil.getCenterPoint(700, 600);
+			CenterPoint cp3 = PointUtil.getCenterPoint(650, 650);
+			CenterPoint cp4 = PointUtil.getCenterPoint(375, 620);
+			
+			LittleCenterPoint lcp1Up = cp1.getUpLittleCenterPoint();
+			Sniper sniper1Lcp1Up = new Sniper(lcp1Up,UnitColor.Red);
+			sniper1Lcp1Up.setUnitName("狙击手0");
+			LittleCenterPoint lcp1Right = cp1.getRightLittleCenterPoint();
+			Sniper sniper1Lcp1Right = new Sniper(lcp1Right,UnitColor.Red);
+			sniper1Lcp1Right.setUnitName("狙击手2");
+			
+			Constructor.putOneShapeUnit(sniper1Lcp1Up);//狙击手
+			Constructor.putOneShapeUnit(sniper1Lcp1Right);//狙击手
+			
+			
+			LittleCenterPoint lcpRight = cp2.getRightLittleCenterPoint();
+			Sniper sniper3 = new Sniper(lcpRight,UnitColor.Red);
+			sniper3.setUnitName("狙击手3");
+			Constructor.putOneShapeUnit(sniper3);//狙击手
+			
+			LittleCenterPoint lcpDown = cp3.getDownLittleCenterPoint();
+			Sniper sniper4 = new Sniper(lcpDown,UnitColor.Red);
+			sniper4.setUnitName("狙击手4");
+			Constructor.putOneShapeUnit(sniper4);//狙击手
+		});
 		
 //		LittleCenterPoint lcp1 = cp4.getDownLittleCenterPoint();
 //		Tany tany = new Tany(lcp1,UnitColor.Red);
@@ -258,17 +266,17 @@ public class MainTest {
 //		Tany tany4 = new Tany(lcp4,UnitColor.Orange);
 //		Constructor.putOneShapeUnit(tany4, scenePanel);//谭雅
 		
-//		sniper2.status = SoldierStatus.UMove;
-//		sniper3.status = SoldierStatus.UMove;
-//		sniper4.status = SoldierStatus.UMove;
+//		sniper2.status = SoldierStatus.Moving;
+//		sniper3.status = SoldierStatus.Moving;
+//		sniper4.status = SoldierStatus.Moving;
 		
 //		LittleCenterPoint endTarget = PointUtil.getCenterPoint(492, 485).getLeftLittleCenterPoint();
 //		sniper.nextTarget = endTarget;
 //		sniper.endTarget = endTarget;
-//		sniper.status = SoldierStatus.UMove;
+//		sniper.status = SoldierStatus.Moving;
 		
 //		afCnst.setToFetchCrate(true);
-		
+
 		//简单的攻击效果
 		while(!targetPill.end) {
 			gtank.attack(targetPill);

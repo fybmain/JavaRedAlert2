@@ -11,13 +11,7 @@ public class Adog extends Soldier{
 	
 	public Adog(LittleCenterPoint lcp,UnitColor color) {
 		
-		super(lcp,"adog",color);
-		super.centerOffX = 36;
-		super.centerOffY = 35;
-		super.positionX = lcp.x - centerOffX;
-		super.positionY =  lcp.y - centerOffY;
-		super.positionMinX = curFrame.getMinX()+positionX;
-		super.positionMinY = curFrame.getMinY()+positionY;
+		super(lcp,"adog",color, 36, 35);
 		
 		//定义唯一编号
 		Random random = new Random();

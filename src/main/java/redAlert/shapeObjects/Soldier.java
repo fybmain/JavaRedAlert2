@@ -8,12 +8,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.IntStream;
 
 import redAlert.Constructor;
+import redAlert.RuntimeParameter;
 import redAlert.ShapeUnitFrame;
 import redAlert.enums.Direction;
 import redAlert.enums.UnitColor;
 import redAlert.other.SoldierBloodBar;
+import redAlert.renderer.ShpSequenceInfo;
+import redAlert.renderer.IShpRenderProxy;
+import redAlert.renderer.IShpSequence;
+import redAlert.resourceCenter.RenderResourceCenter;
 import redAlert.resourceCenter.ShpResourceCenter;
 import redAlert.shapeObjects.Building.SceneType;
 import redAlert.utilBean.CenterPoint;
@@ -32,14 +38,58 @@ public abstract class Soldier extends MovableUnit{
 	 * 人物状态
 	 */
 	public enum SoldierStatus{
-		Standing("立正"),Ease1("稍息动作1"),Ease2("稍息动作2"),
-		LMove("向左移动"),UMove("向上移动");
+		Standing("立正"),
+		Moving("移动"),
+		Ease1("稍息动作1"),
+		Ease2("稍息动作2");
 		
 		private final String cnDesc;
 		
 		SoldierStatus(String cnDesc){
 			this.cnDesc = cnDesc;
 		}
+	}
+	
+	/**
+	 * 步兵动画状态编号
+	 */
+	protected enum InfantryAnimState {
+		StandingUp(0, 0, 0, 1),
+		StandingLeftUp(1, 1, 1, 1),
+		StandingLeft(2, 2, 2, 1),
+		StandingLeftDown(3, 3, 3, 1),
+		StandingDown(4, 4, 4, 1),
+		StandingRightDown(5, 5, 5, 1),
+		StandingRight(6, 6, 6, 1),
+		StandingRightUp(7, 7, 7, 1),
+
+		MovingUp(8, 8, 13, 3),
+		MovingLeftUp(9, 14, 19, 3),
+		MovingLeft(10, 20, 25, 3),
+		MovingLeftDown(11, 26, 31, 3),
+		MovingDown(12, 32, 37, 3),
+		MovingRightDown(13, 38, 43, 3),
+		MovingRight(14, 44, 49, 3),
+		MovingRightUp(15, 50, 55, 3),
+		
+		AtEase1(16, 56, 71, 5),
+		AtEase2(17, 72, 86, 5);
+		
+		public final int stateId;
+		public final int animStart, animEnd, slowRate;
+		
+		InfantryAnimState(int stateId, int animStart, int animEnd, int slowRate) {
+			this.stateId = stateId;
+			this.animStart = animStart;
+			this.animEnd = animEnd;
+			this.slowRate = slowRate;
+		}
+		
+		public static final InfantryAnimState[] mapping = {
+				StandingUp, StandingLeftUp, StandingLeft, StandingLeftDown, StandingDown, StandingRightDown, StandingRight, StandingRightUp,
+				MovingUp, MovingLeftUp, MovingLeft, MovingLeftDown, MovingDown, MovingRightDown, MovingRight, MovingRightUp,
+				AtEase1, AtEase2,
+		};
 	}
 	
 	/**
@@ -63,51 +113,13 @@ public abstract class Soldier extends MovableUnit{
 	 */
 	public Direction curDirection;
 	/**
-	 * 所有帧
+	 * 所有SHP帧的渲染资源
 	 */
-	public List<ShapeUnitFrame> allFrames = null;
+	protected final IShpSequence shpSequence;
 	/**
-	 * 站立动作 8个方向
+	 * SHP渲染代理对象
 	 */
-	public List<ShapeUnitFrame> standingFrames = null;
-	/**
-	 * 向上移动的帧
-	 */
-	public List<ShapeUnitFrame> upMoveFrames = null;
-	/**
-	 * 向左上移动的帧
-	 */
-	public List<ShapeUnitFrame> leftUpMoveFrames = null;
-	/**
-	 * 向左移动的帧
-	 */
-	public List<ShapeUnitFrame> leftMoveFrames = null;
-	/**
-	 * 向左下移动的帧
-	 */
-	public List<ShapeUnitFrame> leftDownMoveFrames = null;
-	/**
-	 * 向下移动的帧
-	 */
-	public List<ShapeUnitFrame> downMoveFrames = null;
-	/**
-	 * 向右下移动的帧
-	 */
-	public List<ShapeUnitFrame> rightDownMoveFrames = null;
-	/**
-	 * 向右移动的帧
-	 */
-	public List<ShapeUnitFrame> rightMoveFrames = null;
-	/**
-	 * 向右上移动的帧
-	 */
-	public List<ShapeUnitFrame> rightUpMoveFrames = null;
-	/**
-	 * 兵种有两套稍息动作
-	 */
-	public List<ShapeUnitFrame> easeList1 = null;
-	public List<ShapeUnitFrame> easeList2 = null;
-	
+	protected IShpRenderProxy renderProxy = null;
 	
 	/**
 	 * 移动帧图下标
@@ -139,10 +151,6 @@ public abstract class Soldier extends MovableUnit{
 	 */
 	public ReentrantLock xunluLock = new ReentrantLock(true);
 	/**
-	 * 方向和帧的对应关系
-	 */
-	public Map<Direction,List<ShapeUnitFrame>> directionMap = new HashMap<>();
-	/**
 	 * 步兵状态默认是站立
 	 */
 	public SoldierStatus status = SoldierStatus.Standing;
@@ -160,30 +168,40 @@ public abstract class Soldier extends MovableUnit{
 	 * @param shpPrefix
 	 * @param color
 	 */
-	public Soldier(LittleCenterPoint lcp,String shpPrefix,UnitColor color) {
+	public Soldier(LittleCenterPoint lcp,String shpPrefix,UnitColor color, int centerOffX, int centerOffY) {
 		super.unitColor = color;
-		allFrames = ShpResourceCenter.loadShpResource(shpPrefix, SceneType.TEM.getPalPrefix());
-		standingFrames = allFrames.subList(0, 8);
-		upMoveFrames = allFrames.subList(8, 14);//向上运动
-		leftUpMoveFrames = allFrames.subList(14, 20);//左上运动
-		leftMoveFrames = allFrames.subList(20, 26);//左运动
-		leftDownMoveFrames = allFrames.subList(26, 32);//左下运动
-		downMoveFrames = allFrames.subList(32, 38);//下运动
-		rightDownMoveFrames = allFrames.subList(38, 44);//右下运动
-		rightMoveFrames = allFrames.subList(44, 50);//右运动
-		rightUpMoveFrames = allFrames.subList(50, 56);//右上运动
-		easeList1 = allFrames.subList(56, 72);//稍息动作一
-		easeList2 = allFrames.subList(72, 87);//稍息动作二
-		directionMap.put(Direction.Up, upMoveFrames);
-		directionMap.put(Direction.LeftUp, leftUpMoveFrames);
-		directionMap.put(Direction.Left, leftMoveFrames);
-		directionMap.put(Direction.LeftDown, leftDownMoveFrames);
-		directionMap.put(Direction.Down, downMoveFrames);
-		directionMap.put(Direction.RightDown, rightDownMoveFrames);
-		directionMap.put(Direction.Right, rightMoveFrames);
-		directionMap.put(Direction.RightUp, rightUpMoveFrames);
+		List<ShapeUnitFrame> frames = ShpResourceCenter.loadShpResource(shpPrefix, SceneType.TEM.getPalPrefix());
+        shpSequence = RenderResourceCenter.shpSequences.computeIfAbsent(this.getClass(), clazz -> {
+			int[][] states = new int[InfantryAnimState.mapping.length][];
+			for(int i=0;i<states.length;i++) {
+				InfantryAnimState anim = InfantryAnimState.mapping[i];
+				states[i] = IntStream.rangeClosed(anim.animStart, anim.animEnd) // 生成 start~end
+						.flatMap(n -> IntStream.generate(() -> n).limit(anim.slowRate)) // 每个数字重复 slowRate 次
+						.toArray();
+			}
+			ShpSequenceInfo seqInfo = new ShpSequenceInfo();
+			seqInfo.frames = frames;
+			seqInfo.centerOffX = centerOffX;
+			seqInfo.centerOffY = centerOffY;
+			seqInfo.groundSizeX = 1;
+			seqInfo.groundSizeY = 1;
+			seqInfo.states = states;
+			return RenderResourceCenter.renderer.registerShpSequence(seqInfo);
+        });
+        renderProxy = RenderResourceCenter.renderer.registerShpRenderProxy();
+        
+        this.relativeMinX = frames.get(0).getMinX();
+        this.relativeMinY = frames.get(0).getMinY();
+        this.centerOffX = centerOffX;
+        this.centerOffY = centerOffY;
+        this.positionX = lcp.x - centerOffX;
+        this.positionY =  lcp.y - centerOffY;
+        this.positionMinX = positionX + relativeMinX;
+        this.positionMinY = positionY + relativeMinY;
+
 		curDirection = Direction.Down;//默认步兵朝向下方
-		curFrame = calculateFirstFrame();
+		calculateFirstFrame();
+		curFrame = frames.get(0); // TODO 删除残留设计
 		curLittleCenterPoint = lcp;
 		curCenterPoint = PointUtil.getCenterPoint(lcp.getX(), lcp.getY());
 		curCenterPoint.addSoldier(this);
@@ -197,17 +215,11 @@ public abstract class Soldier extends MovableUnit{
 		Constructor.putOneShapeUnit(bar);
 	}
 	
-	/**
-	 * 由于新建建筑是直接扔进缓存队列的,所以需要计算好第一帧的颜色
-	 * 计算第一帧
-	 */
-	public ShapeUnitFrame calculateFirstFrame() {
-		ShapeUnitFrame curFrame = allFrames.get(0);
-		
-		ShapeUnitFrame newFrame = curFrame.copy();
-		BufferedImage image = newFrame.getImg();
-		giveFrameUnitColor(image,newFrame);//上阵营色
-		return newFrame;
+	private void calculateFirstFrame() {
+		renderProxy.setAppearance(shpSequence, unitColor, 17);
+		int stateId = calculateAnimState(this.status, this.curDirection).stateId;
+		renderProxy.update(stateId, RuntimeParameter.frameCount, positionX+centerOffX, positionY+centerOffY, 0);
+		renderProxy.setEnable(true);
 	}
 	
 	
@@ -251,7 +263,7 @@ public abstract class Soldier extends MovableUnit{
 				this.nextTarget = planMovePath.get(0);
 				this.endTarget = planMovePath.get(planMovePath.size()-1);
 				this.movePath = planMovePath;
-				status=SoldierStatus.UMove;
+				status=SoldierStatus.Moving;
 				
 			}else {
 				
@@ -389,11 +401,14 @@ public abstract class Soldier extends MovableUnit{
 		 * 确定使用的帧图
 		 * 部分步兵会游泳  这里需要重写moveOneStep方法 以获取合适的帧图
 		 */
+		/*
 		List<ShapeUnitFrame> moveFrame = directionMap.get(curDirection);
-		umoveIndex+=1;
 		ShapeUnitFrame frame = moveFrame.get( (umoveIndex/3)   %moveFrame.size());
-		transToColorful(frame);//上阵营色
+		transToColorful(frame); //上阵营色
+		 */
 		
+		umoveIndex+=1;
+
 		/*
 		 * 修改位移
 		 * 需要注意：当前位置可能不是中心点  所以需要比较目的地的Position坐标
@@ -450,11 +465,8 @@ public abstract class Soldier extends MovableUnit{
 		}
 	}
 	
-
-	@Override
-	public void calculateNextFrame() {
-		
-		if(status==SoldierStatus.UMove) {
+	private void updateState() {
+		if(status==SoldierStatus.Moving) {
 			if(nextTarget==null) {
 				status = SoldierStatus.Standing;
 				return;
@@ -521,13 +533,9 @@ public abstract class Soldier extends MovableUnit{
 		
 		if(status==SoldierStatus.Ease1) {
 			easeIndex++;
-			int slowIndex = (easeIndex/10)%easeList1.size();
-			ShapeUnitFrame frame = easeList1.get(slowIndex);
-			transToColorful(frame);//上阵营色
-			
-			easeIndex++;
-			
-			if(easeIndex== (easeList1.size()-1)*10 ) {
+			int animLength = InfantryAnimState.AtEase1.animEnd - InfantryAnimState.AtEase1.animStart + 1;
+
+			if(easeIndex == (animLength-1)*InfantryAnimState.AtEase1.slowRate ) {
 				status = SoldierStatus.Standing;
 				curDirection=Direction.LeftDown;//细节  动作一做完了 站立朝左下
 				easeIndex = 0;
@@ -537,12 +545,9 @@ public abstract class Soldier extends MovableUnit{
 		
 		if(status==SoldierStatus.Ease2) {
 			easeIndex++;
-			int slowIndex = (easeIndex/10)%easeList2.size();
-			ShapeUnitFrame frame = easeList2.get(slowIndex);
-			transToColorful(frame);//上阵营色
-			
-			easeIndex++;
-			if(easeIndex== (easeList2.size()-1)*10 ) {
+			int animLength = InfantryAnimState.AtEase2.animEnd - InfantryAnimState.AtEase2.animStart + 1;
+
+			if(easeIndex == (animLength-1)*InfantryAnimState.AtEase2.slowRate ) {
 				status = SoldierStatus.Standing;
 				curDirection=Direction.RightDown;//细节  动作二做完了 站立朝右下
 				easeIndex = 0;
@@ -551,56 +556,17 @@ public abstract class Soldier extends MovableUnit{
 		}
 		
 		if(status==SoldierStatus.Standing) {
-			ShapeUnitFrame frame = null;
-			if(curDirection==Direction.Up) {
-				frame = standingFrames.get(0);
-			}
-			if(curDirection==Direction.LeftUp) {
-				frame = standingFrames.get(1);
-			}
-			if(curDirection==Direction.Left) {
-				frame = standingFrames.get(2);
-			}
-			if(curDirection==Direction.LeftDown) {
-				frame = standingFrames.get(3);
-			}
-			if(curDirection==Direction.Down) {
-				frame = standingFrames.get(4);
-			}
-			if(curDirection==Direction.RightDown) {
-				frame = standingFrames.get(5);
-			}
-			if(curDirection==Direction.Right) {
-				frame = standingFrames.get(6);
-			}
-			if(curDirection==Direction.RightUp) {
-				frame = standingFrames.get(7);
-			}
 			
 			standingTime++;
 			if(standingTime>200) {
-				Random r = new Random();
-				int n = r.nextInt(3);
+				int n = RuntimeParameter.random.nextInt(3);
 				if(n==0) {
 					status=SoldierStatus.Ease1;
-					frame = easeList1.get(1);
 				}else if(n==1){
 					status=SoldierStatus.Ease2;
-					frame = easeList2.get(1);
 				}else {
-					int direction = r.nextInt(8);
-					frame = standingFrames.get(direction);
-					switch(direction){
-						case 0:curDirection = Direction.Up;break;
-						case 1:curDirection = Direction.LeftUp;break;
-						case 2:curDirection = Direction.Left;break;
-						case 3:curDirection = Direction.LeftDown;break;
-						case 4:curDirection = Direction.Down;break;
-						case 5:curDirection = Direction.RightDown;break;
-						case 6:curDirection = Direction.Right;break;
-						case 7:curDirection = Direction.RightUp;break;
-					}
-					
+					int direction = RuntimeParameter.random.nextInt(8);
+					curDirection = Direction.mapping[direction];
 				}
 				
 				standingTime = 0;
@@ -608,11 +574,24 @@ public abstract class Soldier extends MovableUnit{
 			}else {
 				
 			}
-			
-			transToColorful(frame);//上阵营色
-			
 		}
-		
+	}
+
+	@Override
+	public void calculateNextFrame() {
+		this.updateState();
+		int animId = calculateAnimState(status, curDirection).stateId;
+		long startMoment = RuntimeParameter.frameCount;
+		switch(status) {
+		case Moving:
+			startMoment -= umoveIndex;
+			break;
+		case Ease1:
+		case Ease2:
+			startMoment -= easeIndex;
+			break;
+		}
+		renderProxy.update(animId, startMoment, positionX+centerOffX, positionY+centerOffY, 0);
 	}
 
 	public int getMaxHp() {
@@ -661,5 +640,19 @@ public abstract class Soldier extends MovableUnit{
 		BufferedImage oriImage = frame.getImg();
 		g2d.drawImage(oriImage, 0, 0, null);
 		giveFrameUnitColor(newImg,frame);//上阵营色
+	}
+	
+	public static InfantryAnimState calculateAnimState(SoldierStatus state, Direction dir) {
+		switch(state) {
+		case Standing:
+			return InfantryAnimState.mapping[InfantryAnimState.StandingUp.stateId + dir.dirId];
+		case Moving:
+			return InfantryAnimState.mapping[InfantryAnimState.MovingUp.stateId + dir.dirId];
+		case Ease1:
+			return InfantryAnimState.AtEase1;
+		case Ease2:
+			return InfantryAnimState.AtEase2;
+		default: throw new RuntimeException("Invalid SoldierStatus");
+		}
 	}
 }

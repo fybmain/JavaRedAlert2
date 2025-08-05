@@ -22,13 +22,7 @@ public class Tany extends Soldier{
 	
 	public Tany(LittleCenterPoint lcp,UnitColor color) {
 		
-		super(lcp,"tany",color);
-		super.centerOffX = 62;
-		super.centerOffY = 57;
-		super.positionX = lcp.x - centerOffX;
-		super.positionY =  lcp.y - centerOffY;
-		super.positionMinX = curFrame.getMinX()+positionX;
-		super.positionMinY = curFrame.getMinY()+positionY;
+		super(lcp,"tany",color, 62, 57);
 		
 		//定义唯一编号
 		Random random = new Random();
@@ -46,7 +40,7 @@ public class Tany extends Soldier{
 	@Override
 	public void calculateNextFrame() {
 		
-		if(status==SoldierStatus.UMove) {
+		if(status==SoldierStatus.Moving) {
 			if(nextTarget==null) {
 				status = SoldierStatus.Standing;
 				return;
@@ -169,15 +163,9 @@ public class Tany extends Soldier{
 		
 		if(status==SoldierStatus.Ease1) {
 			easeIndex++;
-			int slowIndex = (easeIndex/10)%easeList1.size();
+			int animLength = InfantryAnimState.AtEase1.animEnd - InfantryAnimState.AtEase1.animStart + 1;
 			
-			
-			ShapeUnitFrame frame = easeList1.get(slowIndex);
-			transToColorful(frame);//上阵营色
-			
-			easeIndex++;
-			
-			if(easeIndex== (easeList1.size()-1)*10 ) {
+			if(easeIndex == (animLength-1)*InfantryAnimState.AtEase1.slowRate ) {
 				status = SoldierStatus.Standing;
 				curDirection=Direction.LeftDown;//细节  动作一做完了 站立朝左下
 				easeIndex = 0;
@@ -187,12 +175,9 @@ public class Tany extends Soldier{
 		
 		if(status==SoldierStatus.Ease2) {
 			easeIndex++;
-			int slowIndex = (easeIndex/10)%easeList2.size();
-			ShapeUnitFrame frame = easeList2.get(slowIndex);
-			transToColorful(frame);//上阵营色
-			
-			easeIndex++;
-			if(easeIndex== (easeList2.size()-1)*10 ) {
+			int animLength = InfantryAnimState.AtEase2.animEnd - InfantryAnimState.AtEase2.animStart + 1;
+
+			if(easeIndex == (animLength-1)*InfantryAnimState.AtEase2.slowRate ) {
 				status = SoldierStatus.Standing;
 				curDirection=Direction.RightDown;//细节  动作二做完了 站立朝右下
 				easeIndex = 0;
@@ -201,57 +186,17 @@ public class Tany extends Soldier{
 		}
 		
 		if(status==SoldierStatus.Standing) {
-			
-			ShapeUnitFrame frame = null;
-			if(curDirection==Direction.Up) {
-				frame = standingFrames.get(0);
-			}
-			if(curDirection==Direction.LeftUp) {
-				frame = standingFrames.get(1);
-			}
-			if(curDirection==Direction.Left) {
-				frame = standingFrames.get(2);
-			}
-			if(curDirection==Direction.LeftDown) {
-				frame = standingFrames.get(3);
-			}
-			if(curDirection==Direction.Down) {
-				frame = standingFrames.get(4);
-			}
-			if(curDirection==Direction.RightDown) {
-				frame = standingFrames.get(5);
-			}
-			if(curDirection==Direction.Right) {
-				frame = standingFrames.get(6);
-			}
-			if(curDirection==Direction.RightUp) {
-				frame = standingFrames.get(7);
-			}
-			
 			standingTime++;
 			if(standingTime>200) {
 				Random r = new Random();
 				int n = r.nextInt(3);
 				if(n==0) {
 					status=SoldierStatus.Ease1;
-					frame = easeList1.get(1);
 				}else if(n==1){
 					status=SoldierStatus.Ease2;
-					frame = easeList1.get(1);
 				}else {
 					int direction = r.nextInt(8);
-					frame = standingFrames.get(direction);
-					switch(direction){
-						case 0:curDirection = Direction.Up;break;
-						case 1:curDirection = Direction.LeftUp;break;
-						case 2:curDirection = Direction.Left;break;
-						case 3:curDirection = Direction.LeftDown;break;
-						case 4:curDirection = Direction.Down;break;
-						case 5:curDirection = Direction.RightDown;break;
-						case 6:curDirection = Direction.Right;break;
-						case 7:curDirection = Direction.RightUp;break;
-					}
-					
+					curDirection = Direction.mapping[direction];
 				}
 				
 				standingTime = 0;
@@ -259,9 +204,6 @@ public class Tany extends Soldier{
 			}else {
 				
 			}
-			
-			transToColorful(frame);//上阵营色
-			
 		}
 		
 	}
@@ -280,7 +222,7 @@ public class Tany extends Soldier{
 			path.remove(0);//出队
 			this.movePath = path;
 			this.endTarget = moveTarget;
-			status=SoldierStatus.UMove;
+			status=SoldierStatus.Moving;
 			if(nextTarget!=null) {
 				moveOneStep();
 			}else {
@@ -295,7 +237,7 @@ public class Tany extends Soldier{
 //				this.nextTarget = planMovePath.get(0);
 //				this.endTarget = planMovePath.get(planMovePath.size()-1);
 //				this.movePath = planMovePath;
-//				status=SoldierStatus.UMove;
+//				status=SoldierStatus.Moving;
 //				
 //			}else {
 //				
@@ -365,10 +307,12 @@ public class Tany extends Soldier{
 		 * 确定使用的帧图
 		 * 部分步兵会游泳  这里需要重写moveOneStep方法 以获取合适的帧图
 		 */
+		/*
 		List<ShapeUnitFrame> moveFrame = directionMap.get(curDirection);
 		umoveIndex+=1;
 		ShapeUnitFrame frame = moveFrame.get( (umoveIndex/3)%moveFrame.size());
 		transToColorful(frame);//上阵营色
+		*/
 		
 		/*
 		 * 修改位移

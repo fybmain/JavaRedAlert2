@@ -132,10 +132,8 @@ public class SoldierBloodBar extends MovableUnitBloodBar{
 	
 	@Override
 	public void calculateNextFrame() {
-		int firstMinX = soldier.allFrames.get(0).getMinX();
-		int firstMinY = soldier.allFrames.get(0).getMinY();
-		super.setPositionX(soldier.getPositionX()+firstMinX);
-		super.setPositionY(soldier.getPositionY()+firstMinY);
+		super.setPositionX(soldier.positionX + soldier.relativeMinX);
+		super.setPositionY(soldier.positionY + soldier.relativeMinY);
 		
 		super.curHp = soldier.getCurHp();
 		rePaintBloodBar();

@@ -13,13 +13,7 @@ public class Gi extends Soldier{
 	
 	public Gi(LittleCenterPoint lcp,UnitColor color) {
 		
-		super(lcp,"gi",color);
-		super.centerOffX = 37;
-		super.centerOffY = 35;
-		super.positionX = lcp.x - centerOffX;
-		super.positionY =  lcp.y - centerOffY;
-		super.positionMinX = curFrame.getMinX()+positionX;
-		super.positionMinY = curFrame.getMinY()+positionY;
+		super(lcp,"gi",color, 37, 35);
 		
 		//定义名称
 		super.unitName = "美国大兵";

@@ -47,6 +47,11 @@ public abstract class ShapeUnit implements Comparable<ShapeUnit>{
 	 */
 	public int positionMinX,positionMinY;
 	/**
+	 * 方块图片中非透明像素点相对矩形左上顶点的X坐标、Y坐标最小值
+	 *   该值的主要作用是绘制血条
+	 */
+	public int relativeMinX,relativeMinY;
+	/**
 	 * 当前帧，实现动画效果的核心变量
 	 *    变量中含有一个图片，界面渲染时绘制的就是这个图片
 	 */

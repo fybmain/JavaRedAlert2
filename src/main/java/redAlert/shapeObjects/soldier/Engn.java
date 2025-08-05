@@ -11,13 +11,7 @@ public class Engn extends Soldier{
 	
 	public Engn(LittleCenterPoint lcp,UnitColor color) {
 		
-		super(lcp,"engineer",color);
-		super.centerOffX = 36;
-		super.centerOffY = 39;
-		super.positionX = lcp.x - centerOffX;
-		super.positionY =  lcp.y - centerOffY;
-		super.positionMinX = curFrame.getMinX()+positionX;
-		super.positionMinY = curFrame.getMinY()+positionY;
+		super(lcp,"engineer",color, 36, 39);
 		
 		//定义唯一编号
 		super.unitName = "攻城狮";

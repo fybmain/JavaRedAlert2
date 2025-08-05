@@ -10,13 +10,7 @@ public class Tany2 extends Soldier{
 	
 	public Tany2(LittleCenterPoint lcp,UnitColor color) {
 		
-		super(lcp,"tany",color);
-		super.centerOffX = 62;
-		super.centerOffY = 57;
-		super.positionX = lcp.x - centerOffX;
-		super.positionY =  lcp.y - centerOffY;
-		super.positionMinX = curFrame.getMinX()+positionX;
-		super.positionMinY = curFrame.getMinY()+positionY;
+		super(lcp,"tany",color, 62, 57);
 		
 		//定义唯一编号
 		super.unitName = "谭雅";

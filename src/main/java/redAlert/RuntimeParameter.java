@@ -1,11 +1,13 @@
 package redAlert;
 
 import java.util.PriorityQueue;
+import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import redAlert.enums.MouseStatus;
 import redAlert.shapeObjects.ShapeUnit;
+import redAlert.task.ShapeUnitCalculateTask;
 import redAlert.utilBean.CenterPoint;
 
 /**
@@ -40,6 +42,11 @@ public class RuntimeParameter {
 	public static void addUnitToQueue(ShapeUnit shapeUnit) {
 		shapeUnitBlockingQueue.add(shapeUnit);
 	}
+	
+	/**
+	 * 游戏逻辑线程
+	 */
+	public static ShapeUnitCalculateTask gameLogicThread = new ShapeUnitCalculateTask(shapeUnitBlockingQueue);
 	
 	/**
 	 * SHP方块规划队列1
@@ -93,7 +100,7 @@ public class RuntimeParameter {
 	public static void addBuildingToQueue(ShapeUnit unit) {
 		while(true) {
 			if(casLock.compareAndSet(0, 1)) {
-				 PriorityQueue<ShapeUnit> cacheShapeUnitList = getCacheShapeUnitList();
+				PriorityQueue<ShapeUnit> cacheShapeUnitList = getCacheShapeUnitList();
 				if(cacheShapeUnitList.contains(unit)) {
 					System.out.println("有重复移除");
 					cacheShapeUnitList.remove(unit);
@@ -126,4 +133,13 @@ public class RuntimeParameter {
 	 * 当前鼠标状态
 	 */
 	public static MouseStatus mouseStatus = MouseStatus.Idle;
+	
+	/**
+	 * 随机数生成器
+	 */
+	public static Random random = new Random();
+	
+	public static final boolean debugMode =
+		java.lang.management.ManagementFactory.getRuntimeMXBean()
+			.getInputArguments().toString().contains("jdwp");
 }

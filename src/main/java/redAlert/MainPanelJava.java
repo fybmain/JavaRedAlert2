@@ -61,10 +61,6 @@ public class MainPanelJava extends JPanel{
 		
 		this.myself = this;
 		
-		//游戏场景物品计算任务
-		ShapeUnitCalculateTask calculateTask = new ShapeUnitCalculateTask(RuntimeParameter.shapeUnitBlockingQueue);
-		calculateTask.startCalculateTask();
-		
 		this.setCursor(Mouse.getNoneCursor());//隐藏鼠标
 		
 		int theSightOffX = RuntimeParameter.viewportOffX;

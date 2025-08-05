@@ -1,20 +1,23 @@
-package redAlert.utils;
+package redAlert.renderer.gl2;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.awt.image.WritableRaster;
 import java.nio.IntBuffer;
 
+import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 
+import redAlert.RuntimeParameter;
 import redAlert.ShapeUnitFrame;
 import redAlert.shapeObjects.ShapeUnit;
+import redAlert.utils.CoordinateUtil;
 
 /**
  * JOGL工具类  负责绘图
  */
-public class DrawableUtil {
+public class DrawUtil {
 	/**
 	 * 在指定位置画一幅帧图
 	 */
@@ -179,4 +182,47 @@ public class DrawableUtil {
 	    
 	}
 	
+	/**
+	 * 在指定位置画一张纹理贴图
+	 */
+	public static void drawOneTexAtPosition(GL gl_, int textureId, int posX, int posY, int width, int height, int viewportOffX, int viewportOffY) {
+		GL2 gl = gl_.getGL2();
+
+        //纹理已缓存在显存
+    	gl.glBindTexture(GL2.GL_TEXTURE_2D, textureId);
+    	
+    	//纹理过滤
+        gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MIN_FILTER, GL2.GL_LINEAR);
+        gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MAG_FILTER, GL2.GL_LINEAR);
+       
+        int viewX = CoordinateUtil.getViewportX(posX, viewportOffX);
+		int viewY = CoordinateUtil.getViewportY(posY, viewportOffY);
+        
+        gl.glBegin(GL2.GL_QUADS);
+        gl.glTexCoord2f(0.0f, 0.0f); gl.glVertex2f( viewX,       viewY);
+        gl.glTexCoord2f(1.0f, 0.0f); gl.glVertex2f( viewX+width, viewY);
+        gl.glTexCoord2f(1.0f, 1.0f); gl.glVertex2f( viewX+width, viewY+height);
+        gl.glTexCoord2f(0.0f, 1.0f); gl.glVertex2f( viewX,       viewY+height);
+        gl.glEnd();
+        
+        gl.glBindTexture(GL2.GL_TEXTURE_2D, 0); //解绑纹理
+	}
+	
+	/**
+	 * 绘制缓存的所有SHP绘制状态
+	 */
+	public static void applyShpDrawStates(GL gl, FrameData frame) {
+		long frameCount = RuntimeParameter.frameCount;
+		for(int i=1;i<frame.shpDrawStates.size();i++) {
+			if(frame.shpEnableMap.get(i)) {
+				ShpDrawState state = frame.shpDrawStates.get(i);
+				ShpSequence shp = state.shpSequence;
+				int texId = state.shpSequence.getTextureId(state.state, frameCount - state.startMoment);
+				int positionX = state.posX - shp.centerOffX;
+				int positionY = state.posY - shp.centerOffY;
+				drawOneTexAtPosition(gl, texId, positionX, positionY, shp.width, shp.height, frame.viewportOffsetX, frame.viewportOffsetY);
+			}
+		}
+		gl.getGL2().glFlush();
+	}
 }

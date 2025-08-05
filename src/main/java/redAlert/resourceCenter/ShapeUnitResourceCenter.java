@@ -9,6 +9,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import redAlert.Constructor;
 import redAlert.GlobalConfig;
 import redAlert.OptionsPanel;
+import redAlert.RuntimeParameter;
 import redAlert.enums.BuildingAreaType;
 import redAlert.enums.SoldierEnum;
 import redAlert.enums.VehicleEnum;
@@ -357,38 +358,39 @@ public class ShapeUnitResourceCenter {
 					LittleCenterPoint targetMoveLcp = bornCp.getLeftDn().getLeftDn().getLeftLittleCenterPoint();
 					LittleCenterPoint target = LittleCenterPointUtil.findSoldierCanOnLcpNearBy(targetMoveLcp);
 					
-					
-					if(soldier==SoldierEnum.AfSnip) {
-						Sniper sniper = new Sniper(bornLcp,GlobalConfig.unitColor);
-						Constructor.putOneShapeUnit(sniper);
-						addMovableUnit(sniper);
-						sniper.moveToTarget(target);
-					}
-					if(soldier==SoldierEnum.AfGi) {
-						Gi gi = new Gi(bornLcp,GlobalConfig.unitColor);
-						Constructor.putOneShapeUnit(gi);
-						addMovableUnit(gi);
-						gi.moveToTarget(target);
-					}
-					if(soldier==SoldierEnum.Engn) {
-						Engn engn = new Engn(bornLcp,GlobalConfig.unitColor);
-						Constructor.putOneShapeUnit(engn);
-						addMovableUnit(engn);
-						engn.moveToTarget(target);
-					}
-					if(soldier==SoldierEnum.AfAdog) {
-						Adog adog = new Adog(bornLcp,GlobalConfig.unitColor);
-						Constructor.putOneShapeUnit(adog);
-						addMovableUnit(adog);
-						adog.moveToTarget(target);
-					}
-					if(soldier==SoldierEnum.AfTany) {
-						Tany2 tany = new Tany2(bornLcp,GlobalConfig.unitColor);
-						Constructor.playOneMusic("itanatb");//哈哈哈哈哈哈哈
-						Constructor.putOneShapeUnit(tany);
-						addMovableUnit(tany);
-						tany.moveToTarget(target);
-					}
+					RuntimeParameter.gameLogicThread.remoteInvoke(() -> {						
+						if(soldier==SoldierEnum.AfSnip) {
+							Sniper sniper = new Sniper(bornLcp,GlobalConfig.unitColor);
+							Constructor.putOneShapeUnit(sniper);
+							addMovableUnit(sniper);
+							sniper.moveToTarget(target);
+						}
+						if(soldier==SoldierEnum.AfGi) {
+							Gi gi = new Gi(bornLcp,GlobalConfig.unitColor);
+							Constructor.putOneShapeUnit(gi);
+							addMovableUnit(gi);
+							gi.moveToTarget(target);
+						}
+						if(soldier==SoldierEnum.Engn) {
+							Engn engn = new Engn(bornLcp,GlobalConfig.unitColor);
+							Constructor.putOneShapeUnit(engn);
+							addMovableUnit(engn);
+							engn.moveToTarget(target);
+						}
+						if(soldier==SoldierEnum.AfAdog) {
+							Adog adog = new Adog(bornLcp,GlobalConfig.unitColor);
+							Constructor.putOneShapeUnit(adog);
+							addMovableUnit(adog);
+							adog.moveToTarget(target);
+						}
+						if(soldier==SoldierEnum.AfTany) {
+							Tany2 tany = new Tany2(bornLcp,GlobalConfig.unitColor);
+							Constructor.playOneMusic("itanatb");//哈哈哈哈哈哈哈
+							Constructor.putOneShapeUnit(tany);
+							addMovableUnit(tany);
+							tany.moveToTarget(target);
+						}
+					});
 				}
 			}
 		}catch (Exception e) {
