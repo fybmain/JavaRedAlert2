@@ -1,7 +1,7 @@
 package redAlert.shapeObjects;
 
 /*
- * 无实际单位，仅用于标记队列首位，区分逻辑帧
+ * 无实际单位，仅用于标记队列尾部
  */
 public class VirtualShapeUnit extends ShapeUnit {
 
@@ -13,4 +13,5 @@ public class VirtualShapeUnit extends ShapeUnit {
 	public void calculateNextFrame() {
 		// 什么也不做
 	}
+
 }

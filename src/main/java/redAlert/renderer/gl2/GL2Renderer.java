@@ -4,7 +4,6 @@ import java.awt.Component;
 
 import com.jogamp.opengl.GLAutoDrawable;
 
-import redAlert.RuntimeParameter;
 import redAlert.renderer.IRenderer;
 import redAlert.renderer.IdPool;
 import redAlert.renderer.ShpSequenceInfo;
@@ -25,6 +24,7 @@ public final class GL2Renderer implements IRenderer {
 	
 	public GL2Renderer() {
 		this.panel = new RenderPanel(this);
+		
 		this.drawable = panel;
 		this.frameData[0].prevFrameData = this.frameData[2];
 	}

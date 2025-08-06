@@ -3,7 +3,6 @@ package redAlert;
 import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import redAlert.enums.MouseStatus;
 import redAlert.shapeObjects.ShapeUnit;
@@ -27,89 +26,42 @@ public class RuntimeParameter {
 	 * 红警2游戏速度5时帧率为60帧/秒
 	 */
 	public static int fps = 60;
-	/**
-	 * SHP方块阻塞队列
-	 * 新增的ShapeUnit都需要先放入此队列,再由规划线程计算渲染次序
-	 * 注意:此队列只用于渲染画面,不参与游戏的逻辑运算,逻辑运算由资源中心负责处理
-	 * 为什么用阻塞队列:
-	 *   当队列中的元素处理完毕放入规划队列时，此时会阻塞，避免建筑规划线程不停的轮询，减少CPU占用
-	 */
-	public static ArrayBlockingQueue<ShapeUnit> shapeUnitBlockingQueue = new ArrayBlockingQueue<ShapeUnit>(150);
-	
-	/**
-	 * 缓存队列中添加方块
-	 */
-	public static void addUnitToQueue(ShapeUnit shapeUnit) {
-		shapeUnitBlockingQueue.add(shapeUnit);
-	}
 	
 	/**
 	 * 游戏逻辑线程
 	 */
-	public static ShapeUnitCalculateTask gameLogicThread = new ShapeUnitCalculateTask(shapeUnitBlockingQueue);
-	
+	public static ShapeUnitCalculateTask gameLogicThread = new ShapeUnitCalculateTask();
 	/**
-	 * SHP方块规划队列1
-	 * 当buildingFlag=偶数  此队列为绘制队列
-	 * 当buildingFlag=奇数  此队列为缓存队列
+	 * 逻辑线程队列中添加方块
 	 */
-	private static PriorityQueue<ShapeUnit> unitList = new PriorityQueue<ShapeUnit>(150);
-	/**
-	 * SHP方块规划队列2
-	 * 两个建筑队列,一个用于绘制画面时，另一个用于缓存下一帧画面
-	 * 当buildingFlag=奇数  此队列为缓存队列
-	 * 当buildingFlag=偶数  此队列为绘制队列
-	 */
-	private static PriorityQueue<ShapeUnit> unitList2 = new PriorityQueue<ShapeUnit>(150);
-	
-	/**
-	 * SHP方块队列标识
-	 * 用于决定使用1.2哪个队列
-	 */
-	public static AtomicInteger queueFlag = new AtomicInteger(0);
-	/**
-	 * 0表示空闲  1表示正在使用缓存队列
-	 * 为使用缓存队列而设计的CAS锁
-	 * 拿到锁才能向缓存队列中添加单位或切换队列身份
-	 */
-	public static AtomicInteger casLock = new AtomicInteger(0);
-	/**
-	 * 获取绘制队列
-	 */
-	public static PriorityQueue<ShapeUnit> getDrawShapeUnitList() {
-		if(queueFlag.get()%2==0) {
-			return unitList;
-		}else {
-			return unitList2;
-		}
+	public static void addUnitToQueue(ShapeUnit unit) {
+		gameLogicThread.addUnitToLogicQueue(unit);
 	}
 	/**
-	 * 获取缓存队列
+	 * 通知逻辑线程队列结束
 	 */
-	public static PriorityQueue<ShapeUnit> getCacheShapeUnitList() {
-		if(queueFlag.get()%2==0) {
-			return unitList2;
-		}else {
-			return unitList;
-		}
+	public static void finishUnitQueue() {
+		gameLogicThread.finishLogicQueue();
 	}
 	
 	/**
-	 * 向缓存队列中添加建筑
+	 * 用于逻辑线程向渲染线程传递SHP绘制队列的过程
+	 */
+	public static final ArrayBlockingQueue<PriorityQueue<ShapeUnit>> unitQueueGate = new ArrayBlockingQueue<>(1);
+	/**
+	 * 获取当前SHP绘制队列
+	 */
+	public static PriorityQueue<ShapeUnit> takeDrawShapeUnitList() {
+		while(true) {
+			try { return unitQueueGate.take(); }
+			catch(InterruptedException e){ continue; }
+		}
+	}
+	/**
+	 * 向当前SHP缓存队列中添加建筑
 	 */
 	public static void addBuildingToQueue(ShapeUnit unit) {
-		while(true) {
-			if(casLock.compareAndSet(0, 1)) {
-				PriorityQueue<ShapeUnit> cacheShapeUnitList = getCacheShapeUnitList();
-				if(cacheShapeUnitList.contains(unit)) {
-					System.out.println("有重复移除");
-					cacheShapeUnitList.remove(unit);
-				}
-				cacheShapeUnitList.offer(unit);
-				casLock.compareAndSet(1, 0);
-				break;
-			}
-		}
+		gameLogicThread.addToCacheQueue(unit);
 	}
 	
 	/**

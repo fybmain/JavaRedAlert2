@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.nio.IntBuffer;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GL2;
@@ -13,6 +14,8 @@ import redAlert.renderer.IShpSequence;
 import redAlert.renderer.ShpSequenceInfo;
 
 public class ShpSequence implements IShpSequence {
+	AtomicBoolean textureReady = new AtomicBoolean(false);
+	
 	GLAutoDrawable drawable;
 	int frameCount, width, height;
 	int centerOffX, centerOffY;
@@ -42,31 +45,35 @@ public class ShpSequence implements IShpSequence {
 			assert info.states[i].length > 0;
 			states[i] = info.states[i].clone();
 		}
-		
-		IntBuffer[] intBuffers = new IntBuffer[n];
-		for(int i=0;i<n;i++) {
-			BufferedImage image = frames.get(i).getImg();
-			assert (image.getWidth() == width) && (image.getHeight() == height);
-	    	DataBufferInt dataBuffer = (DataBufferInt)(image.getRaster().getDataBuffer());
-	    	int[] pixels = dataBuffer.getData();
-			intBuffers[i] = IntBuffer.wrap(pixels);
-		}
 
 		textureIds = new int[n];
-		drawable.invoke(true, d -> {
+		drawable.invoke(false, d -> {
 			GL2 gl = d.getGL().getGL2();
 			gl.glGenTextures(n, textureIds, 0);
+
 			for(int i=0;i<n;i++) {
+				BufferedImage image = frames.get(i).getImg();
+				assert (image.getWidth() == width) && (image.getHeight() == height);
+		    	DataBufferInt dataBuffer = (DataBufferInt)(image.getRaster().getDataBuffer());
+		    	int[] pixels = dataBuffer.getData();
+		    	IntBuffer intBuffer = IntBuffer.wrap(pixels);
+				
 	        	gl.glBindTexture(GL2.GL_TEXTURE_2D, textureIds[i]);
 				gl.glTexImage2D(GL2.GL_TEXTURE_2D, 0, 4, width, height, 0,
-						GL2.GL_BGRA, GL2.GL_UNSIGNED_BYTE, intBuffers[i]);
-				gl.glFlush(); //刷新命令队列
+						GL2.GL_BGRA, GL2.GL_UNSIGNED_BYTE, intBuffer);
 			}
+			gl.glFlush(); //刷新命令队列
+			textureReady.set(true);
 			return true;
 		});
 	}
 	
+	final boolean isReady() {
+		return textureReady.get();
+	}
+	
 	final int getTextureId(int stateId, long relativeFrameCount) {
+		assert isReady();
 		assert relativeFrameCount >= 0;
 		int frameIndex = (int) (relativeFrameCount % states[stateId].length);
 		int texIndex = states[stateId][frameIndex];
@@ -75,10 +82,12 @@ public class ShpSequence implements IShpSequence {
 	}
 	
 	final float getTexCoordU(float virtualU, float virtualV) {
+		assert isReady();
 		return virtualU;
 	}
 	
 	final float getTexCoordV(float virtualU, float virtualV) {
+		assert isReady();
 		return virtualV;
 	}
 	

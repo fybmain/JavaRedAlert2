@@ -25,6 +25,9 @@ public class DrawUtil {
 		GL2 gl = drawable.getGL().getGL2();
 		
         BufferedImage image = frame.getImg();
+        if(image==null) {
+        	return;
+        }
         int imageWidth = image.getWidth();
         int imageHeight = image.getHeight();
         
@@ -217,6 +220,7 @@ public class DrawUtil {
 			if(frame.shpEnableMap.get(i)) {
 				ShpDrawState state = frame.shpDrawStates.get(i);
 				ShpSequence shp = state.shpSequence;
+				if(!shp.isReady()) { continue; }
 				int texId = state.shpSequence.getTextureId(state.state, frameCount - state.startMoment);
 				int positionX = state.posX - shp.centerOffX;
 				int positionY = state.posY - shp.centerOffY;

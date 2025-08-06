@@ -69,10 +69,9 @@ public class RenderPanel extends GLJPanel{
 	 * 执行画板初始化
 	 */
 	public RenderPanel(GL2Renderer renderer) {
-		final GLProfile profile = GLProfile.get(GLProfile.GL2);
-		GLCapabilities capabilities = new GLCapabilities(profile);
-		this.setRequestedGLCapabilities(capabilities);
-		PanelGlListener listener = new PanelGlListener(this, renderer); //处理页面渲染的
+		super(calculateGlCaps());
+		
+		PanelGlListener listener = new PanelGlListener(this, renderer); //处理画面渲染
 		this.addGLEventListener(listener);
 
 		super.setLocation(SysConfig.locationX, SysConfig.locationY);
@@ -94,6 +93,12 @@ public class RenderPanel extends GLJPanel{
 	    	}
 	    });
 		
+	}
+	
+	private static final GLCapabilities calculateGlCaps() {
+		final GLProfile profile = GLProfile.get(GLProfile.GL2);
+		GLCapabilities capabilities = new GLCapabilities(profile);
+		return capabilities;
 	}
 	
 	/**
@@ -268,15 +273,8 @@ public class RenderPanel extends GLJPanel{
 		 * 保证在绘制时,其他线程可以向缓存队列中放置内容
 		 * 保证其他线程向缓存队列放置方块过程中,缓存队列不会突然变成绘制队列,导致线程向绘制队列中放置方块
 		 */
-		while(true) {
-			if(RuntimeParameter.casLock.compareAndSet(0, 1)) {
-				RuntimeParameter.queueFlag.addAndGet(1);//先把缓存队列切换成绘制队列(队列身份互换)
-				drawShapeUnitList = RuntimeParameter.getDrawShapeUnitList();
-				RuntimeParameter.casLock.compareAndSet(1, 0);
-				break;
-			}
-		}
-			
+		drawShapeUnitList = RuntimeParameter.takeDrawShapeUnitList();
+
 		if(!drawShapeUnitList.isEmpty()) {
 			
 			Graphics2D g2d = canvas.createGraphics();
@@ -344,6 +342,7 @@ public class RenderPanel extends GLJPanel{
 			}
 			g2d.dispose();
 		}
+		RuntimeParameter.finishUnitQueue();
 	}
 	
 	/**
@@ -544,7 +543,7 @@ class PanelGlListener implements GLEventListener{
 	public void display(GLAutoDrawable drawable) {
 		GL2 gl = drawable.getGL().getGL2();
 		gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f); //glClear时的颜色缓冲默认值
-		gl.glClearDepth(1.0f); //glClear时的深度缓冲默认值
+		//gl.glClearDepth(1.0f); //glClear时的深度缓冲默认值
         gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);//清除颜色缓冲区和深度缓冲区
 		
         renderer.rendererSwapGameFrame();

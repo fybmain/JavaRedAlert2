@@ -20,7 +20,6 @@ import redAlert.shapeObjects.soldier.Sniper;
 import redAlert.shapeObjects.vehicle.GrizTank;
 import redAlert.shapeObjects.vehicle.Mcv;
 import redAlert.shapeObjects.vehicle.XiniuTank2;
-import redAlert.task.ShapeUnitCalculateTask;
 import redAlert.utilBean.CenterPoint;
 import redAlert.utilBean.LittleCenterPoint;
 import redAlert.utils.PointUtil;

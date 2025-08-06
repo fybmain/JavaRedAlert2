@@ -294,14 +294,7 @@ public class MainPanelJava extends JPanel{
 		 * 保证在绘制时,其他线程可以向缓存队列中放置内容
 		 * 保证其他线程向缓存队列放置方块过程中,缓存队列不会突然变成绘制队列,导致线程向绘制队列中放置方块
 		 */
-		while(true) {
-			if(RuntimeParameter.casLock.compareAndSet(0, 1)) {
-				RuntimeParameter.queueFlag.addAndGet(1);//先把缓存队列切换成绘制队列(队列身份互换)
-				drawShapeUnitList = RuntimeParameter.getDrawShapeUnitList();
-				RuntimeParameter.casLock.compareAndSet(1, 0);
-				break;
-			}
-		}
+		drawShapeUnitList = RuntimeParameter.takeDrawShapeUnitList();
 			
 		if(!drawShapeUnitList.isEmpty()) {
 			
